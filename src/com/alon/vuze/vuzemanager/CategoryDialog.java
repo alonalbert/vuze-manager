@@ -19,14 +19,19 @@ import org.eclipse.swt.widgets.Text;
 import org.gudy.azureus2.core3.internat.MessageText;
 import org.gudy.azureus2.ui.swt.Messages;
 
-class SwtMain {
+public class CategoryDialog {
 
-  public static void main(String[] args) {
-    final Config config = new Config("out", new DebugLogger());
-    final Display display = new Display();
-    final Shell shell = new Shell();
+  private final Display display;
+  private final Shell shell;
+
+  private OnOkListener onOkListener = null;
+  private OnCancelListener onCancelListener = null;
+
+  CategoryDialog(Display display, Config config) {
+    this.display = display;
+    shell = new Shell();
     shell.setLayout(new GridLayout());
-    MessageText.loadBundle();
+
     Messages.setLanguageText(shell, "vuzeManager.categories.add.popup.title");
     shell.setImage(ImageRepository.getImage(display, ADD));
 
@@ -72,30 +77,36 @@ class SwtMain {
     final Button cancel = new Button(buttons, SWT.PUSH);
     cancel.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true));
     Messages.setLanguageText(cancel, "vuzeManager.categories.add.popup.cancel");
-    cancel.addListener(SWT.Selection, event -> shell.dispose());
+    cancel.addListener(SWT.Selection, event -> {
+      shell.dispose();
+      if (onCancelListener != null) {
+        onCancelListener.onCancel();
+      }
+    });
 
     final Button ok = new Button(buttons, SWT.PUSH);
     ok.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, true));
     Messages.setLanguageText(ok, "vuzeManager.categories.add.popup.ok");
     ok.addListener(SWT.Selection, event -> {
       final String category = categoryEdit.getText();
-      if (!category.isEmpty()) {
+      if(!category.isEmpty()) {
         final Set<CategoryConfig> categories = config.getCategories();
-        final CategoryConfig.Action action = CategoryConfig.Action.values()[acionCombo
-            .getSelectionIndex()];
-        final CategoryConfig categoryConfig = new CategoryConfig(category, action,
-            daysSpinner.getSelection());
+        final CategoryConfig.Action action = CategoryConfig.Action.values()[acionCombo.getSelectionIndex()];
+        final CategoryConfig categoryConfig = new CategoryConfig(category, action, daysSpinner.getSelection());
         if (categories.contains(categoryConfig)) {
           categories.remove(categoryConfig);
         }
         categories.add(categoryConfig);
         shell.dispose();
-        populateTable(categories);
         config.save();
+        if (onOkListener != null) {
+          onOkListener.onOk(categoryConfig);
+        }
       }
     });
+  }
 
-    //open shell
+  void open() {
     shell.pack();
     final Monitor primary = display.getPrimaryMonitor ();
     final Rectangle bounds = primary.getBounds ();
@@ -104,18 +115,29 @@ class SwtMain {
         bounds.x + (bounds.width - rect.width) / 2,
         bounds.y +(bounds.height - rect.height) / 2);
     shell.open();
-    while (!shell.isDisposed()) {
-      if (!display.readAndDispatch()) {
-        display.sleep();
-      }
-    }
-    display.dispose();
-
   }
 
-  private static void populateTable(Set<CategoryConfig> categories) {
-    for (CategoryConfig category : categories) {
-      System.out.println(category);
-    }
+  void setOnOkListener(OnOkListener onOkListener) {
+    this.onOkListener = onOkListener;
+  }
+
+  void removeOnOkListener() {
+    this.onOkListener = null;
+  }
+
+  void setOnCancelListener(OnCancelListener onCancelListener) {
+    this.onCancelListener = onCancelListener;
+  }
+
+  void removeOnCancelListener() {
+    this.onCancelListener = null;
+  }
+
+  interface OnOkListener {
+    void onOk(CategoryConfig categoryConfig);
+  }
+
+  interface OnCancelListener {
+    void onCancel();
   }
 }
