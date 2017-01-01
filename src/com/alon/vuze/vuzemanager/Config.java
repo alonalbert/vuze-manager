@@ -1,25 +1,25 @@
 package com.alon.vuze.vuzemanager;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.Set;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
-// TODO: 12/31/16 Use JSON
-public class Config {
+class Config {
+
+  private static final String CATEGORIES = "categories";
   private final String configFile;
   private final DebugLogger logger;
 
-  private Set<CategoryConfig> categories = new HashSet<>();
+  private final Set<CategoryConfig> categories = new HashSet<>();
 
-  public Config(String path, DebugLogger logger) {
-    this.configFile = path + "vuze-manager.options";
+  Config(String path, DebugLogger logger) {
+    this.configFile = path + "/vuze-manager-options.json";
     this.logger = logger;
     load();
   }
@@ -28,7 +28,7 @@ public class Config {
     return categories;
   }
 
-  public synchronized void save() {
+  synchronized void save() {
     final File optionsFile = new File(configFile);
     logger.log("storing options to file: %s", optionsFile.getPath());
     try {
@@ -37,7 +37,7 @@ public class Config {
         optionsFile.createNewFile();
       }
       saveFile(optionsFile);
-    } catch(Exception e) {
+    } catch(IOException e) {
       logger.log(e, "Failed to store options");
     }
   }
@@ -53,21 +53,39 @@ public class Config {
         optionsFile.createNewFile();
         saveFile(optionsFile);
       }
-    } catch(Exception e) {
+    } catch(Throwable e) {
       logger.log(e, "Failed to load options");
+      try {
+        saveFile(optionsFile);
+      } catch (IOException e1) {
+        logger.log(e, "Failed to store options");
+      }
     }
   }
 
   private void saveFile(File file) throws IOException {
-    try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)))) {
-      out.writeObject(categories);
+    final JSONObject json = new JSONObject();
+    final JSONArray jsonCategories = new JSONArray();
+    for (CategoryConfig category : categories) {
+      jsonCategories.add(category.toJson());
+    }
+    json.put(CATEGORIES, jsonCategories);
+
+    try (FileWriter out = new FileWriter(file)) {
+      out.write(json.toString());
     }
   }
 
-  private void loadFile(File optionsFile) throws IOException, ClassNotFoundException {
-    try (ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(optionsFile)))) {
-      //noinspection unchecked
-      categories = (Set<CategoryConfig>) in.readObject();
+  private void loadFile(File file) throws Exception {
+    final JSONParser parser = new JSONParser();
+
+    try (FileReader in = new FileReader(file)) {
+      JSONObject json = (JSONObject) parser.parse(in);
+
+      final JSONArray jsonCategories = (JSONArray) json.get(CATEGORIES);
+      for (Object obj : jsonCategories) {
+        categories.add(CategoryConfig.fromJson((JSONObject) obj));
+      }
     }
   }
 }

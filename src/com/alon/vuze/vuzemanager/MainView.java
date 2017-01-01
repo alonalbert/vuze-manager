@@ -10,23 +10,16 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.gudy.azureus2.plugins.PluginInterface;
 import org.gudy.azureus2.ui.swt.Messages;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
-public class MainView implements UISWTViewEventListener {
+class MainView implements UISWTViewEventListener {
 
   static final String VIEWID = "VuzeManagerView";
   private final PluginInterface pluginInterface;
   private final Config config;
-  private Display display;
-  private Shell shell;
-
-  private CTabItem tabAutoForceSeed;
-  private CTabItem tabCategories;
-  private CTabItem tabPlex;
 
   MainView(PluginInterface pluginInterface, Config config) {
     this.pluginInterface = pluginInterface;
@@ -66,9 +59,7 @@ public class MainView implements UISWTViewEventListener {
   }
 
   private void initialize(Composite parent) {
-    this.display = parent.getDisplay();
-    this.shell = parent.getShell();
-
+    final Display display = parent.getDisplay();
 
     final Label titleLabel = new Label(parent, SWT.BORDER);
     Messages.setLanguageText(titleLabel, "Views.plugins.VuzeManagerView.title");
@@ -92,18 +83,18 @@ public class MainView implements UISWTViewEventListener {
     tabFolder.setSelectionForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
     tabFolder.setSimple(false);
 
-    tabCategories = new CTabItem(tabFolder, SWT.NULL);
+    final CTabItem tabCategories = new CTabItem(tabFolder, SWT.NULL);
     Messages.setLanguageText(tabCategories, "vuzeManager.tab.categories");
     tabCategories.setControl(new CatagoriesView(tabFolder, pluginInterface, config));
 
-    tabPlex = new CTabItem(tabFolder, SWT.NULL);
+    final CTabItem tabPlex = new CTabItem(tabFolder, SWT.NULL);
     Messages.setLanguageText(tabPlex, "vuzeManager.tab.plex");
     // todo: save to config
     tabFolder.setSelection(0);
   }
 
   private void delete() {
-
+    ImageRepository.unLoadImages();
   }
 
 }

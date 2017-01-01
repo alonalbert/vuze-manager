@@ -1,6 +1,13 @@
 package com.alon.vuze.vuzemanager;
 
-public class CategoryConfig {
+import org.json.simple.JSONObject;
+
+class CategoryConfig {
+
+  private static final String CATEGORY = "category";
+  private static final String ACTION = "action";
+  private static final String DAYS = "days";
+
   enum Action {
     FORCE_SEED("vuzeManager.categories.action.forceSeed"),
     AUTO_DELETE("vuzeManager.categories.action.autoDelete"),;
@@ -30,12 +37,27 @@ public class CategoryConfig {
     return category;
   }
 
-  public Action getAction() {
+  Action getAction() {
     return action;
   }
 
   int getDays() {
     return days;
+  }
+
+  JSONObject toJson() {
+    final JSONObject json= new JSONObject();
+    json.put(CATEGORY, category);
+    json.put(ACTION, action.toString());
+    json.put(DAYS, days);
+    return json;
+  }
+
+  static CategoryConfig fromJson(JSONObject json) {
+    return new CategoryConfig(
+        (String) json.get(CATEGORY),
+        Action.valueOf((String) json.get(ACTION)),
+        (int) (long) json.get(DAYS));
   }
 
   @Override
@@ -59,5 +81,15 @@ public class CategoryConfig {
     int result = category.hashCode();
     result = 31 * result + action.hashCode();
     return result;
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("CategoryConfig{");
+    sb.append("category='").append(category).append('\'');
+    sb.append(", action=").append(action);
+    sb.append(", days=").append(days);
+    sb.append('}');
+    return sb.toString();
   }
 }
