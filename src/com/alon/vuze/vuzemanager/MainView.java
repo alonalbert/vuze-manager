@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.gudy.azureus2.plugins.PluginInterface;
-import org.gudy.azureus2.ui.swt.Messages;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
@@ -20,39 +19,25 @@ class MainView implements UISWTViewEventListener {
   static final String VIEWID = "VuzeManagerView";
   private final PluginInterface pluginInterface;
   private final Config config;
+  private final Logger logger;
+  private final Messages messages;
 
-  MainView(PluginInterface pluginInterface, Config config) {
+  MainView(PluginInterface pluginInterface, Config config, Logger logger, Messages messages) {
     this.pluginInterface = pluginInterface;
     this.config = config;
+    this.logger = logger;
+    this.messages = messages;
   }
 
   @Override
   public boolean eventOccurred(UISWTViewEvent event) {
     switch (event.getType()) {
-      case UISWTViewEvent.TYPE_CREATE:
-        break;
-
       case UISWTViewEvent.TYPE_INITIALIZE:
         initialize((Composite) event.getData());
         break;
 
-      case UISWTViewEvent.TYPE_REFRESH:
-        break;
-
       case UISWTViewEvent.TYPE_DESTROY:
         delete();
-        break;
-
-      case UISWTViewEvent.TYPE_DATASOURCE_CHANGED:
-        break;
-
-      case UISWTViewEvent.TYPE_FOCUSGAINED:
-        break;
-
-      case UISWTViewEvent.TYPE_FOCUSLOST:
-        break;
-
-      case UISWTViewEvent.TYPE_LANGUAGEUPDATE:
         break;
     }
     return true;
@@ -62,7 +47,7 @@ class MainView implements UISWTViewEventListener {
     final Display display = parent.getDisplay();
 
     final Label titleLabel = new Label(parent, SWT.BORDER);
-    Messages.setLanguageText(titleLabel, "Views.plugins.VuzeManagerView.title");
+    messages.setLanguageText(titleLabel, "Views.plugins.VuzeManagerView.title");
     titleLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
     titleLabel.setBackground(display.getSystemColor(SWT.COLOR_LIST_SELECTION));
     titleLabel.setForeground(display.getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
@@ -84,11 +69,11 @@ class MainView implements UISWTViewEventListener {
     tabFolder.setSimple(false);
 
     final CTabItem tabCategories = new CTabItem(tabFolder, SWT.NULL);
-    Messages.setLanguageText(tabCategories, "vuzeManager.tab.categories");
-    tabCategories.setControl(new CatagoriesView(tabFolder, pluginInterface, config));
+    messages.setLanguageText(tabCategories, "vuzeManager.tab.categories");
+    tabCategories.setControl(new CatagoriesView(tabFolder, pluginInterface, config, logger, messages));
 
     final CTabItem tabPlex = new CTabItem(tabFolder, SWT.NULL);
-    Messages.setLanguageText(tabPlex, "vuzeManager.tab.plex");
+    messages.setLanguageText(tabPlex, "vuzeManager.tab.plex");
     // todo: save to config
     tabFolder.setSelection(0);
   }

@@ -1,10 +1,5 @@
 package com.alon.vuze.vuzemanager;
 
-import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
-import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.REMOVE;
-
-import java.util.ArrayList;
-import java.util.Comparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -22,20 +17,29 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.gudy.azureus2.core3.internat.MessageText;
 import org.gudy.azureus2.plugins.PluginInterface;
-import org.gudy.azureus2.ui.swt.Messages;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+
+import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
+import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.REMOVE;
 
 class CatagoriesView extends Composite {
 
   private final PluginInterface pluginInterface;
   private final Config config;
+  private final Logger logger;
+  private final Messages messages;
+
   private final Table table;
   private final ToolItem remove;
-  private final ToolItem add;
 
-  CatagoriesView(Composite parent, PluginInterface pluginInterface, Config config) {
+  CatagoriesView(Composite parent, PluginInterface pluginInterface, Config config, Logger logger, Messages messages) {
     super(parent, SWT.BORDER);
     this.pluginInterface = pluginInterface;
     this.config = config;
+    this.logger = logger;
+    this.messages = messages;
 
     final Display display = getDisplay();
 
@@ -43,13 +47,13 @@ class CatagoriesView extends Composite {
     setLayoutData(new GridData(GridData.FILL_BOTH));
 
     final Label label = new Label(this, SWT.NULL);
-    Messages.setLanguageText(label, "vuzeManager.categories.label");
+    messages.setLanguageText(label, "vuzeManager.categories.label");
 
     final ToolBar toolBar = new ToolBar(this, SWT.BORDER | SWT.FLAT);
 
-    add = new ToolItem(toolBar, SWT.PUSH);
+    final ToolItem add = new ToolItem(toolBar, SWT.PUSH);
     add.setImage(ImageRepository.getImage(display, ADD));
-    Messages.setLanguageTooltip(add, "vuzeManager.categories.add");
+    messages.setLanguageTooltip(add, "vuzeManager.categories.add");
     add.addListener(SWT.Selection, e -> handleAddItem());
 
     table = new Table(this,
@@ -57,7 +61,7 @@ class CatagoriesView extends Composite {
 
     remove = new ToolItem(toolBar, SWT.PUSH);
     remove.setImage(ImageRepository.getImage(display, REMOVE));
-    Messages.setLanguageTooltip(remove, "vuzeManager.categories.remove");
+    messages.setLanguageTooltip(remove, "vuzeManager.categories.remove");
     remove.setEnabled(false);
     remove.addListener(SWT.Selection, e -> handleRemoveItem());
 
@@ -66,15 +70,15 @@ class CatagoriesView extends Composite {
 
     // TODO: 12/31/16 Persist comulmn widths in config
     final TableColumn name = new TableColumn(table, SWT.NULL);
-    Messages.setLanguageText(name, "vuzeManager.categories.column.name");
+    messages.setLanguageText(name, "vuzeManager.categories.column.name");
     name.setWidth(200);
 
     final TableColumn action = new TableColumn(table, SWT.NULL);
-    Messages.setLanguageText(action, "vuzeManager.categories.column.action");
+    messages.setLanguageText(action, "vuzeManager.categories.column.action");
     action.setWidth(250);
 
     final TableColumn days = new TableColumn(table, SWT.NULL);
-    Messages.setLanguageText(days, "vuzeManager.categories.column.days");
+    messages.setLanguageText(days, "vuzeManager.categories.column.days");
     days.setWidth(200);
 
     //listener to deselect if outside an item
@@ -98,14 +102,14 @@ class CatagoriesView extends Composite {
     final TableItem[] items = table.getSelection();
     if (items.length == 1) {
       final CategoryDialog categoryDialog = new CategoryDialog(
-          getDisplay(), this.config, (CategoryConfig) items[0].getData());
+          getDisplay(), config, messages, (CategoryConfig) items[0].getData());
       categoryDialog.setOnOkListener(categoryConfig -> populateTable());
       categoryDialog.open();
     }
   }
 
   private void handleAddItem() {
-    final CategoryDialog categoryDialog = new CategoryDialog(getDisplay(), this.config);
+    final CategoryDialog categoryDialog = new CategoryDialog(getDisplay(), config, messages);
     categoryDialog.setOnOkListener(categoryConfig -> populateTable());
     categoryDialog.open();
   }

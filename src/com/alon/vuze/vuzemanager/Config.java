@@ -1,24 +1,25 @@
 package com.alon.vuze.vuzemanager;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 class Config {
 
   private static final String CATEGORIES = "categories";
   private final String configFile;
-  private final DebugLogger logger;
+  private final Logger logger;
 
   private final Set<CategoryConfig> categories = new HashSet<>();
 
-  Config(String path, DebugLogger logger) {
+  Config(String path, Logger logger) {
     this.configFile = path + "/vuze-manager-options.json";
     this.logger = logger;
     load();

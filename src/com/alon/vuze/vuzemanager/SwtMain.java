@@ -1,8 +1,5 @@
 package com.alon.vuze.vuzemanager;
 
-import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
-
-import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -16,18 +13,21 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.gudy.azureus2.core3.internat.MessageText;
-import org.gudy.azureus2.ui.swt.Messages;
+
+import java.io.IOException;
+import java.util.Set;
+
+import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
 
 class SwtMain {
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     final Config config = new Config("out", new DebugLogger());
+    final DebugMessages messages = new DebugMessages();
     final Display display = new Display();
     final Shell shell = new Shell();
     shell.setLayout(new GridLayout());
-    MessageText.loadBundle();
-    Messages.setLanguageText(shell, "vuzeManager.categories.add.popup.title");
+    messages.setLanguageText(shell, "vuzeManager.categories.add.popup.title");
     shell.setImage(ImageRepository.getImage(display, ADD));
 
     final Composite body = new Composite(shell, SWT.BORDER);
@@ -35,7 +35,7 @@ class SwtMain {
     body.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
     final Label categoryLabel = new Label(body, SWT.NULL);
-    Messages.setLanguageText(categoryLabel, "vuzeManager.categories.add.popup.category");
+    messages.setLanguageText(categoryLabel, "vuzeManager.categories.add.popup.category");
     final GridData labelLayout = new GridData();
     labelLayout.widthHint = 200;
     categoryLabel.setLayoutData(labelLayout);
@@ -46,18 +46,18 @@ class SwtMain {
     categoryEdit.setLayoutData(valueLayout);
 
     final Label actionLabel = new Label(body, SWT.NULL);
-    Messages.setLanguageText(actionLabel, "vuzeManager.categories.add.popup.action");
+    messages.setLanguageText(actionLabel, "vuzeManager.categories.add.popup.action");
     actionLabel.setLayoutData(labelLayout);
 
     final Combo acionCombo = new Combo(body, SWT.DROP_DOWN | SWT.READ_ONLY);
     acionCombo.setLayoutData(valueLayout);
     for (CategoryConfig.Action action : CategoryConfig.Action.values()) {
-      acionCombo.add(MessageText.getString(action.getMessageKey()));
+      acionCombo.add(messages.getString(action.getMessageKey()));
     }
     acionCombo.setText(acionCombo.getItem(0));
 
     final Label daysLabel = new Label(body, SWT.NULL);
-    Messages.setLanguageText(daysLabel, "vuzeManager.categories.add.popup.days");
+    messages.setLanguageText(daysLabel, "vuzeManager.categories.add.popup.days");
     daysLabel.setLayoutData(labelLayout);
 
     final Spinner daysSpinner = new Spinner(body, SWT.SINGLE | SWT.BORDER);
@@ -71,12 +71,12 @@ class SwtMain {
 
     final Button cancel = new Button(buttons, SWT.PUSH);
     cancel.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true));
-    Messages.setLanguageText(cancel, "vuzeManager.categories.add.popup.cancel");
+    messages.setLanguageText(cancel, "vuzeManager.categories.add.popup.cancel");
     cancel.addListener(SWT.Selection, event -> shell.dispose());
 
     final Button ok = new Button(buttons, SWT.PUSH);
     ok.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, true));
-    Messages.setLanguageText(ok, "vuzeManager.categories.add.popup.ok");
+    messages.setLanguageText(ok, "vuzeManager.categories.add.popup.ok");
     ok.addListener(SWT.Selection, event -> {
       final String category = categoryEdit.getText();
       if (!category.isEmpty()) {
