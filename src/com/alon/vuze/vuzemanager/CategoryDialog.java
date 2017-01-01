@@ -22,13 +22,22 @@ import org.gudy.azureus2.ui.swt.Messages;
 public class CategoryDialog {
 
   private final Display display;
+  private final Config config;
   private final Shell shell;
 
   private OnOkListener onOkListener = null;
   private OnCancelListener onCancelListener = null;
+  private Text categoryEdit;
+  private Combo acionCombo;
+  private Spinner daysSpinner;
 
-  CategoryDialog(Display display, Config config) {
+  public CategoryDialog(Display display, Config config) {
+    this(display, config, null);
+  }
+
+  CategoryDialog(Display display, Config config, CategoryConfig categoryConfig) {
     this.display = display;
+    this.config = config;
     shell = new Shell();
     shell.setLayout(new GridLayout());
 
@@ -45,7 +54,7 @@ public class CategoryDialog {
     labelLayout.widthHint = 200;
     categoryLabel.setLayoutData(labelLayout);
 
-    final Text categoryEdit = new Text(body, SWT.SINGLE | SWT.BORDER);
+    categoryEdit = new Text(body, SWT.SINGLE | SWT.BORDER);
     final GridData valueLayout = new GridData(GridData.FILL_HORIZONTAL);
     valueLayout.widthHint = 250;
     categoryEdit.setLayoutData(valueLayout);
@@ -54,7 +63,7 @@ public class CategoryDialog {
     Messages.setLanguageText(actionLabel, "vuzeManager.categories.add.popup.action");
     actionLabel.setLayoutData(labelLayout);
 
-    final Combo acionCombo = new Combo(body, SWT.DROP_DOWN | SWT.READ_ONLY);
+    acionCombo = new Combo(body, SWT.DROP_DOWN | SWT.READ_ONLY);
     acionCombo.setLayoutData(valueLayout);
     for (CategoryConfig.Action action : CategoryConfig.Action.values()) {
       acionCombo.add(MessageText.getString(action.getMessageKey()));
@@ -65,7 +74,7 @@ public class CategoryDialog {
     Messages.setLanguageText(daysLabel, "vuzeManager.categories.add.popup.days");
     daysLabel.setLayoutData(labelLayout);
 
-    final Spinner daysSpinner = new Spinner(body, SWT.SINGLE | SWT.BORDER);
+    daysSpinner = new Spinner(body, SWT.SINGLE | SWT.BORDER);
     daysSpinner.setLayoutData(valueLayout);
     daysSpinner.setSelection(7);
     daysSpinner.setMinimum(1);
@@ -77,33 +86,43 @@ public class CategoryDialog {
     final Button cancel = new Button(buttons, SWT.PUSH);
     cancel.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true));
     Messages.setLanguageText(cancel, "vuzeManager.categories.add.popup.cancel");
-    cancel.addListener(SWT.Selection, event -> {
-      shell.dispose();
-      if (onCancelListener != null) {
-        onCancelListener.onCancel();
-      }
-    });
+    cancel.addListener(SWT.Selection, event -> handleCancel());
 
     final Button ok = new Button(buttons, SWT.PUSH);
     ok.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, true));
     Messages.setLanguageText(ok, "vuzeManager.categories.add.popup.ok");
-    ok.addListener(SWT.Selection, event -> {
-      final String category = categoryEdit.getText();
-      if(!category.isEmpty()) {
-        final Set<CategoryConfig> categories = config.getCategories();
-        final CategoryConfig.Action action = CategoryConfig.Action.values()[acionCombo.getSelectionIndex()];
-        final CategoryConfig categoryConfig = new CategoryConfig(category, action, daysSpinner.getSelection());
-        if (categories.contains(categoryConfig)) {
-          categories.remove(categoryConfig);
-        }
-        categories.add(categoryConfig);
-        shell.dispose();
-        config.save();
-        if (onOkListener != null) {
-          onOkListener.onOk(categoryConfig);
-        }
+    ok.addListener(SWT.Selection, event -> handleOk());
+
+    if (categoryConfig != null) {
+      categoryEdit.setText(categoryConfig.getCategory());
+      acionCombo.setText(acionCombo.getItem(categoryConfig.getAction().ordinal()));
+      daysSpinner.setSelection(categoryConfig.getDays());
+    }
+  }
+
+  private void handleCancel() {
+    shell.dispose();
+    if (onCancelListener != null) {
+      onCancelListener.onCancel();
+    }
+  }
+
+  private void handleOk() {
+    final String category = categoryEdit.getText();
+    if(!category.isEmpty()) {
+      final Set<CategoryConfig> categories = this.config.getCategories();
+      final CategoryConfig.Action action = CategoryConfig.Action.values()[acionCombo.getSelectionIndex()];
+      final CategoryConfig cc = new CategoryConfig(category, action, daysSpinner.getSelection());
+      if (categories.contains(cc)) {
+        categories.remove(cc);
       }
-    });
+      categories.add(cc);
+      shell.dispose();
+      this.config.save();
+      if (onOkListener != null) {
+        onOkListener.onOk(cc);
+      }
+    }
   }
 
   void open() {
