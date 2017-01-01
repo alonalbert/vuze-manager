@@ -8,11 +8,13 @@ import org.gudy.azureus2.plugins.ui.UIManager;
 import org.gudy.azureus2.plugins.ui.UIManagerListener;
 import org.gudy.azureus2.ui.swt.plugins.UISWTInstance;
 
-import static com.alon.vuze.vuzemanager.VuzeManagerView.VIEWID;
+import static com.alon.vuze.vuzemanager.MainView.VIEWID;
 
 public class VuzeManagerPlugin implements Plugin {
 
   public void initialize(PluginInterface pluginInterface) throws PluginException {
+    final Config config = new Config(pluginInterface.getPluginDirectoryName(), new DebugLogger());
+
     final UIManager uiManager = pluginInterface.getUIManager();
     uiManager.addUIListener(
         new UIManagerListener() {
@@ -21,7 +23,7 @@ public class VuzeManagerPlugin implements Plugin {
             if (instance instanceof UISWTInstance) {
               final UISWTInstance swtInstance = ((UISWTInstance) instance);
 
-              final VuzeManagerView view = new VuzeManagerView(pluginInterface);
+              final MainView view = new MainView(pluginInterface, config);
               swtInstance.addView(UISWTInstance.VIEW_MAIN, VIEWID, view);
               swtInstance.openMainView(VIEWID, view, null);
             }

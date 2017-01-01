@@ -16,19 +16,21 @@ import org.gudy.azureus2.ui.swt.Messages;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
-public class VuzeManagerView implements UISWTViewEventListener {
+public class MainView implements UISWTViewEventListener {
 
   static final String VIEWID = "VuzeManagerView";
   private final PluginInterface pluginInterface;
+  private final Config config;
   private Display display;
   private Shell shell;
 
   private CTabItem tabAutoForceSeed;
-  private CTabItem tabCategoryAutoDelete;
-  private CTabItem tabPlexAutoDelete;
+  private CTabItem tabCategories;
+  private CTabItem tabPlex;
 
-  VuzeManagerView(PluginInterface pluginInterface) {
+  MainView(PluginInterface pluginInterface, Config config) {
     this.pluginInterface = pluginInterface;
+    this.config = config;
   }
 
   @Override
@@ -90,12 +92,12 @@ public class VuzeManagerView implements UISWTViewEventListener {
     tabFolder.setSelectionForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
     tabFolder.setSimple(false);
 
-    tabAutoForceSeed = new CTabItem(tabFolder, SWT.NULL);
-    Messages.setLanguageText(tabAutoForceSeed, "VuzeManager.Tab.AutoForceSeed");
-    tabCategoryAutoDelete = new CTabItem(tabFolder, SWT.NULL);
-    Messages.setLanguageText(tabCategoryAutoDelete, "VuzeManager.Tab.CategoryAutoDelete");
-    tabPlexAutoDelete = new CTabItem(tabFolder, SWT.NULL);
-    Messages.setLanguageText(tabPlexAutoDelete, "VuzeManager.Tab.PlexAutoDelete");
+    tabCategories = new CTabItem(tabFolder, SWT.NULL);
+    Messages.setLanguageText(tabCategories, "vuzeManager.tab.categories");
+    tabCategories.setControl(new CatagoriesView(tabFolder, pluginInterface, config));
+
+    tabPlex = new CTabItem(tabFolder, SWT.NULL);
+    Messages.setLanguageText(tabPlex, "vuzeManager.tab.plex");
     // todo: save to config
     tabFolder.setSelection(0);
   }
