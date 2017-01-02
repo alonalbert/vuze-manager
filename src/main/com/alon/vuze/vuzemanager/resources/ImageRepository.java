@@ -1,6 +1,7 @@
 package com.alon.vuze.vuzemanager.resources;
 
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.widgets.Display;
 
 import java.io.InputStream;
@@ -40,8 +41,6 @@ public class ImageRepository {
   }
 
   public static void unLoadImages() {
-    for (Image im : images.values()) {
-      im.dispose();
-    }
+    images.values().forEach(Resource::dispose);
   }
 }

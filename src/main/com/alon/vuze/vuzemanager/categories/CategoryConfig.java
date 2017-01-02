@@ -85,11 +85,10 @@ public class CategoryConfig {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder("CategoryConfig{");
-    sb.append("category='").append(category).append('\'');
-    sb.append(", action=").append(action);
-    sb.append(", days=").append(days);
-    sb.append('}');
-    return sb.toString();
+    return "CategoryConfig{"
+        + "category='" + category + '\''
+        + ", action=" + action
+        + ", days=" + days
+        + '}';
   }
 }

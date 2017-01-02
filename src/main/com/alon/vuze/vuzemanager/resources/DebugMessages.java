@@ -38,14 +38,14 @@ public class DebugMessages implements Messages {
     final String message = getString(key);
     if (widget instanceof MenuItem) {
       final MenuItem menuItem = ((MenuItem) widget);
-      boolean indent = (menuItem.getData("IndentItem") != null);
+      final boolean indent = (menuItem.getData("IndentItem") != null);
 
       menuItem.setText(indent ? "  " + message : message);
 
       if (menuItem.getAccelerator() != 0) // opt-in only for now; remove this conditional check to allow accelerators for arbitrary MenuItem objects
-        KeyBindings.setAccelerator(menuItem, (String) menuItem.getData()); // update keybinding
+        KeyBindings.setAccelerator(menuItem, (String) menuItem.getData()); // update key binding
     } else if (widget instanceof TableColumn) {
-      TableColumn tc = ((TableColumn) widget);
+      final TableColumn tc = ((TableColumn) widget);
       tc.setText(message);
     } else if (widget instanceof Label)
       // Disable Mnemonic when & is before a space.  Otherwise, it's most
@@ -87,7 +87,7 @@ public class DebugMessages implements Messages {
       return;
     }
     if (widget.getData() != null) {
-      String sToolTip = getString(key);
+      final String sToolTip = getString(key);
       if (widget instanceof CLabel)
         ((CLabel) widget).setToolTipText(sToolTip);
       else if (widget instanceof Label)

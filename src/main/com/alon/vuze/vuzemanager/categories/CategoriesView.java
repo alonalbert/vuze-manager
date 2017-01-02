@@ -4,12 +4,11 @@ import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
 
 import com.alon.vuze.vuzemanager.Config;
+import com.alon.vuze.vuzemanager.categories.CategoryConfig.Action;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.utils.Wildcard;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -34,7 +33,7 @@ import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.plugins.torrent.TorrentManager;
 
-public class CatagoriesView extends Composite implements DownloadCompletionListener {
+public class CategoriesView extends Composite implements DownloadCompletionListener {
 
   private final PluginInterface pluginInterface;
   private final Config config;
@@ -45,7 +44,7 @@ public class CatagoriesView extends Composite implements DownloadCompletionListe
   private final ToolItem remove;
   private final TorrentAttribute categoryAttribute;
 
-  public CatagoriesView(Composite parent, PluginInterface pluginInterface, Config config, Logger logger,
+  public CategoriesView(Composite parent, PluginInterface pluginInterface, Config config, Logger logger,
       Messages messages) {
     super(parent, SWT.BORDER);
     this.pluginInterface = pluginInterface;
@@ -80,7 +79,7 @@ public class CatagoriesView extends Composite implements DownloadCompletionListe
     table.setLayoutData(new GridData(GridData.FILL_BOTH));
     table.setHeaderVisible(true);
 
-    // TODO: 12/31/16 Persist comulmn widths in config
+    // TODO: 12/31/16 Persist column widths in config
     final TableColumn name = new TableColumn(table, SWT.NULL);
     messages.setLanguageText(name, "vuzeManager.categories.column.name");
     name.setWidth(200);
@@ -124,16 +123,16 @@ public class CatagoriesView extends Composite implements DownloadCompletionListe
       return;
     }
     final Set<CategoryConfig> categoryConfigs = config.getCategories();
-    for (CategoryConfig categoryConfig : categoryConfigs) {
-      if (categoryConfig.getAction() == CategoryConfig.Action.FORCE_SEED) {
-        final String wildcard = categoryConfig.getCategory();
-        if (new Wildcard(wildcard).matches(category)) {
-          logger.log("Download %s category %s matched wildcard '%s'. Force started.",
-              download, category, wildcard);
-          download.setForceStart(true);
-        }
-      }
-    }
+    categoryConfigs.stream()
+        .filter(categoryConfig -> categoryConfig.getAction() == Action.FORCE_SEED)
+        .forEach(categoryConfig -> {
+          final String wildcard = categoryConfig.getCategory();
+          if (new Wildcard(wildcard).matches(category)) {
+            logger.log("Download %s category %s matched wildcard '%s'. Force started.",
+                download, category, wildcard);
+            download.setForceStart(true);
+          }
+        });
   }
 
   private void handleItemDoubleClick() {
@@ -141,15 +140,19 @@ public class CatagoriesView extends Composite implements DownloadCompletionListe
     if (items.length == 1) {
       final CategoryConfig categoryConfig = (CategoryConfig) items[0].getData();
       final CategoryDialog categoryDialog = new CategoryDialog(
-          getDisplay(), messages, categoryConfig);
-      categoryDialog.setOnOkListener(newCategoryConfig -> handleAddedOrEdited(categoryConfig, newCategoryConfig));
+          getDisplay(),
+          messages,
+          newCategoryConfig -> handleAddedOrEdited(categoryConfig, newCategoryConfig),
+          categoryConfig);
       categoryDialog.open();
     }
   }
 
   private void handleAddItem() {
-    final CategoryDialog categoryDialog = new CategoryDialog(getDisplay(), messages);
-    categoryDialog.setOnOkListener(categoryConfig -> handleAddedOrEdited(null, categoryConfig));
+    final CategoryDialog categoryDialog = new CategoryDialog(
+        getDisplay(),
+        messages,
+        categoryConfig -> handleAddedOrEdited(null, categoryConfig));
     categoryDialog.open();
   }
 
@@ -188,11 +191,7 @@ public class CatagoriesView extends Composite implements DownloadCompletionListe
     try {
       if (table != null && !table.isDisposed()) {
         table.removeAll();
-        final ArrayList<CategoryConfig> sorted = new ArrayList<>(config.getCategories());
-        sorted.sort(Comparator.comparing(CategoryConfig::getCategory));
-        for (CategoryConfig category : sorted) {
-          addCategoryToTable(category);
-        }
+        config.getCategories().stream().forEachOrdered(this::addCategoryToTable);
       }
     } catch (Exception e) {
       // TODO: 12/31/16 handle

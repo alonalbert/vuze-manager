@@ -36,7 +36,7 @@ public class VuzeLogger implements Logger , LoggerChannelListener {
   @Override
   public void messageLogged(String str, Throwable error) {
     logArea.appendText(str + "\n");
-    StringWriter writer = new StringWriter();
+    final StringWriter writer = new StringWriter();
     error.printStackTrace(new PrintWriter(writer));
     logArea.appendText(writer.toString() + "\n");
   }

@@ -1,6 +1,6 @@
 package com.alon.vuze.vuzemanager;
 
-import com.alon.vuze.vuzemanager.categories.CatagoriesView;
+import com.alon.vuze.vuzemanager.categories.CategoriesView;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
@@ -20,7 +20,7 @@ import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
 class MainView implements UISWTViewEventListener {
 
-  static final String VIEWID = "VuzeManagerView";
+  static final String VIEW_ID = "VuzeManagerView";
   private final PluginInterface pluginInterface;
   private final Config config;
   private final Logger logger;
@@ -74,7 +74,7 @@ class MainView implements UISWTViewEventListener {
 
     final CTabItem tabCategories = new CTabItem(tabFolder, SWT.NULL);
     messages.setLanguageText(tabCategories, "vuzeManager.tab.categories");
-    tabCategories.setControl(new CatagoriesView(tabFolder, pluginInterface, config, logger, messages));
+    tabCategories.setControl(new CategoriesView(tabFolder, pluginInterface, config, logger, messages));
 
     final CTabItem tabPlex = new CTabItem(tabFolder, SWT.NULL);
     messages.setLanguageText(tabPlex, "vuzeManager.tab.plex");

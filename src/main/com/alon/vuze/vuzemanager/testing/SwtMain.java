@@ -53,12 +53,12 @@ class SwtMain {
     messages.setLanguageText(actionLabel, "vuzeManager.categories.add.popup.action");
     actionLabel.setLayoutData(labelLayout);
 
-    final Combo acionCombo = new Combo(body, SWT.DROP_DOWN | SWT.READ_ONLY);
-    acionCombo.setLayoutData(valueLayout);
+    final Combo actionCombo = new Combo(body, SWT.DROP_DOWN | SWT.READ_ONLY);
+    actionCombo.setLayoutData(valueLayout);
     for (CategoryConfig.Action action : CategoryConfig.Action.values()) {
-      acionCombo.add(messages.getString(action.getMessageKey()));
+      actionCombo.add(messages.getString(action.getMessageKey()));
     }
-    acionCombo.setText(acionCombo.getItem(0));
+    actionCombo.setText(actionCombo.getItem(0));
 
     final Label daysLabel = new Label(body, SWT.NULL);
     messages.setLanguageText(daysLabel, "vuzeManager.categories.add.popup.days");
@@ -85,7 +85,7 @@ class SwtMain {
       final String category = categoryEdit.getText();
       if (!category.isEmpty()) {
         final Set<CategoryConfig> categories = config.getCategories();
-        final CategoryConfig.Action action = CategoryConfig.Action.values()[acionCombo
+        final CategoryConfig.Action action = CategoryConfig.Action.values()[actionCombo
             .getSelectionIndex()];
         final CategoryConfig categoryConfig = new CategoryConfig(category, action,
             daysSpinner.getSelection());
@@ -118,8 +118,6 @@ class SwtMain {
   }
 
   private static void populateTable(Set<CategoryConfig> categories) {
-    for (CategoryConfig category : categories) {
-      System.out.println(category);
-    }
+    categories.forEach(System.out::println);
   }
 }

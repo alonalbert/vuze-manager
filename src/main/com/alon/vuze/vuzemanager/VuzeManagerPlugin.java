@@ -1,6 +1,6 @@
 package com.alon.vuze.vuzemanager;
 
-import static com.alon.vuze.vuzemanager.MainView.VIEWID;
+import static com.alon.vuze.vuzemanager.MainView.VIEW_ID;
 
 import com.alon.vuze.vuzemanager.logger.VuzeLogger;
 import com.alon.vuze.vuzemanager.resources.Messages;
@@ -44,8 +44,8 @@ public class VuzeManagerPlugin implements Plugin, UIManagerListener {
     if (instance instanceof UISWTInstance) {
       final UISWTInstance swtInstance = ((UISWTInstance) instance);
       final MainView view = new MainView(pluginInterface, config, logger, messages);
-      swtInstance.addView(UISWTInstance.VIEW_MAIN, VIEWID, view);
-      swtInstance.openMainView(VIEWID, view, null);
+      swtInstance.addView(UISWTInstance.VIEW_MAIN, VIEW_ID, view);
+      swtInstance.openMainView(VIEW_ID, view, null);
     }
   }
 

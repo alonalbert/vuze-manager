@@ -2,6 +2,7 @@ package com.alon.vuze.vuzemanager;
 
 import com.alon.vuze.vuzemanager.categories.CategoryConfig;
 import com.alon.vuze.vuzemanager.logger.Logger;
+import java.util.stream.Collectors;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -68,11 +69,10 @@ public class Config {
 
   private void saveFile(File file) throws IOException {
     final JSONObject json = new JSONObject();
-    final JSONArray jsonCategories = new JSONArray();
-    for (CategoryConfig category : categories) {
-      jsonCategories.add(category.toJson());
-    }
-    json.put(CATEGORIES, jsonCategories);
+
+    json.put(CATEGORIES, categories.stream()
+        .map(CategoryConfig::toJson)
+        .collect(Collectors.toCollection(JSONArray::new)));
 
     try (FileWriter out = new FileWriter(file)) {
       out.write(json.toString());
@@ -83,12 +83,12 @@ public class Config {
     final JSONParser parser = new JSONParser();
 
     try (FileReader in = new FileReader(file)) {
-      JSONObject json = (JSONObject) parser.parse(in);
+      final JSONObject json = (JSONObject) parser.parse(in);
 
       final JSONArray jsonCategories = (JSONArray) json.get(CATEGORIES);
-      for (Object obj : jsonCategories) {
-        categories.add(CategoryConfig.fromJson((JSONObject) obj));
-      }
+      categories.addAll(jsonCategories.stream()
+          .map(obj -> CategoryConfig.fromJson((JSONObject) obj))
+          .collect(Collectors.toList()));
     }
   }
 }

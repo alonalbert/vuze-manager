@@ -23,18 +23,18 @@ class CategoryDialog {
   private final Display display;
   private final Shell shell;
 
-  private OnOkListener onOkListener = null;
-  private OnCancelListener onCancelListener = null;
+  private final OnOkListener onOkListener;
   private final Text categoryEdit;
-  private final Combo acionCombo;
+  private final Combo actionCombo;
   private final Spinner daysSpinner;
 
-  CategoryDialog(Display display, Messages messages) {
-    this(display, messages, null);
+  CategoryDialog(Display display, Messages messages, OnOkListener onOkListener) {
+    this(display, messages, onOkListener, null);
   }
 
-  CategoryDialog(Display display, Messages messages, CategoryConfig categoryConfig) {
+  CategoryDialog(Display display, Messages messages, OnOkListener onOkListener, CategoryConfig categoryConfig) {
     this.display = display;
+    this.onOkListener = onOkListener;
     shell = new Shell();
     shell.setLayout(new GridLayout());
 
@@ -60,12 +60,12 @@ class CategoryDialog {
     messages.setLanguageText(actionLabel, "vuzeManager.categories.add.popup.action");
     actionLabel.setLayoutData(labelLayout);
 
-    acionCombo = new Combo(body, SWT.DROP_DOWN | SWT.READ_ONLY);
-    acionCombo.setLayoutData(valueLayout);
+    actionCombo = new Combo(body, SWT.DROP_DOWN | SWT.READ_ONLY);
+    actionCombo.setLayoutData(valueLayout);
     for (CategoryConfig.Action action : CategoryConfig.Action.values()) {
-      acionCombo.add(messages.getString(action.getMessageKey()));
+      actionCombo.add(messages.getString(action.getMessageKey()));
     }
-    acionCombo.setText(acionCombo.getItem(0));
+    actionCombo.setText(actionCombo.getItem(0));
 
     final Label daysLabel = new Label(body, SWT.NULL);
     messages.setLanguageText(daysLabel, "vuzeManager.categories.add.popup.days");
@@ -92,22 +92,19 @@ class CategoryDialog {
 
     if (categoryConfig != null) {
       categoryEdit.setText(categoryConfig.getCategory());
-      acionCombo.setText(acionCombo.getItem(categoryConfig.getAction().ordinal()));
+      actionCombo.setText(actionCombo.getItem(categoryConfig.getAction().ordinal()));
       daysSpinner.setSelection(categoryConfig.getDays());
     }
   }
 
   private void handleCancel() {
     shell.dispose();
-    if (onCancelListener != null) {
-      onCancelListener.onCancel();
-    }
   }
 
   private void handleOk() {
     final String category = categoryEdit.getText();
     if(!category.isEmpty()) {
-      final CategoryConfig.Action action = CategoryConfig.Action.values()[acionCombo.getSelectionIndex()];
+      final CategoryConfig.Action action = CategoryConfig.Action.values()[actionCombo.getSelectionIndex()];
       final CategoryConfig categoryConfig = new CategoryConfig(category, action, daysSpinner.getSelection());
       shell.dispose();
       if (onOkListener != null) {
@@ -127,31 +124,7 @@ class CategoryDialog {
     shell.open();
   }
 
-  @SuppressWarnings("unused")
-  void setOnOkListener(OnOkListener onOkListener) {
-    this.onOkListener = onOkListener;
-  }
-
-  @SuppressWarnings("unused")
-  void removeOnOkListener() {
-    this.onOkListener = null;
-  }
-
-  @SuppressWarnings("unused")
-  void setOnCancelListener(OnCancelListener onCancelListener) {
-    this.onCancelListener = onCancelListener;
-  }
-
-  @SuppressWarnings("unused")
-  void removeOnCancelListener() {
-    this.onCancelListener = null;
-  }
-
   interface OnOkListener {
     void onOk(CategoryConfig categoryConfig);
-  }
-
-  interface OnCancelListener {
-    void onCancel();
   }
 }

@@ -1,3 +1,4 @@
+<!--suppress XmlUnboundNsPrefix -->
 <project name="Deploy" default="deploy-test" basedir=".">
     <description>
         Deploy Vuze plugin to various destinations
