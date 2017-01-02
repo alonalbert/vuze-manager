@@ -11,10 +11,15 @@ import org.gudy.azureus2.plugins.ui.UIManagerListener;
 import org.gudy.azureus2.plugins.ui.model.BasicPluginConfigModel;
 import org.gudy.azureus2.ui.swt.plugins.UISWTInstance;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import static com.alon.vuze.vuzemanager.MainView.VIEW_ID;
 
 public class VuzeManagerPlugin implements Plugin, UIManagerListener {
 
+  private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
   private Injector injector;
   private CategoryAutoDeleter categoryAutoDeleter;
@@ -27,6 +32,8 @@ public class VuzeManagerPlugin implements Plugin, UIManagerListener {
     pluginInterface.getUIManager().addUIListener(this);
 
     createConfigModule(pluginInterface);
+
+    scheduler.scheduleAtFixedRate(() -> categoryAutoDeleter.autoDeleteDownloads(), 0, 1, TimeUnit.DAYS);
   }
 
   @Override
