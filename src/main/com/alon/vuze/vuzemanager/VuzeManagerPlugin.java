@@ -1,6 +1,6 @@
 package com.alon.vuze.vuzemanager;
 
-import com.alon.vuze.vuzemanager.categories.DownloadAutoDeleter;
+import com.alon.vuze.vuzemanager.categories.CategoryAutoDeleter;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.gudy.azureus2.plugins.Plugin;
@@ -17,10 +17,12 @@ public class VuzeManagerPlugin implements Plugin, UIManagerListener {
 
 
   private Injector injector;
+  private CategoryAutoDeleter categoryAutoDeleter;
 
   public void initialize(PluginInterface pluginInterface) throws PluginException {
 
     injector = Guice.createInjector(new VuzeManagerModule(pluginInterface));
+    categoryAutoDeleter = injector.getInstance(CategoryAutoDeleter.class);
 
     pluginInterface.getUIManager().addUIListener(this);
 
@@ -46,8 +48,7 @@ public class VuzeManagerPlugin implements Plugin, UIManagerListener {
     final BasicPluginConfigModel configModel = pluginInterface.getUIManager()
         .createBasicPluginConfigModel("ConfigView.section.vuzeManager");
 
-    final DownloadAutoDeleter deleter = injector.getInstance(DownloadAutoDeleter.class);
     configModel.addActionParameter2(null, "vuzeManager.categories.config.checkNow")
-        .addListener(param -> deleter.autoDeleteDownloads());
+        .addListener(param -> categoryAutoDeleter.autoDeleteDownloads());
   }
 }

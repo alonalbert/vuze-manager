@@ -1,11 +1,14 @@
 package com.alon.vuze.vuzemanager.logger;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import org.gudy.azureus2.plugins.logging.LoggerChannel;
 import org.gudy.azureus2.plugins.logging.LoggerChannelListener;
 import org.gudy.azureus2.plugins.ui.components.UITextArea;
 
+import javax.inject.Singleton;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+@Singleton
 public class VuzeLogger implements Logger , LoggerChannelListener {
   private final LoggerChannel loggerChannel;
   private final UITextArea logArea;

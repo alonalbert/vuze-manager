@@ -8,7 +8,7 @@
 
     <property name="plugin-file" location="out/artifacts/vuze-manager.jar"/>
     <property name="dest-debug" location="run/plugins/vuze-manager/vuze-manager.jar"/>
-    <property name="dest-prod" location="${user.home}/.azureus/plugins/VuzeManager/VuzeManager${plugin.version}_0.1.jar"/>
+    <property name="dest-prod" location="${user.home}/.azureus/plugins/VuzeManager/VuzeManager_${plugin.version}.jar"/>
 
 
     <target name="deploy-test">

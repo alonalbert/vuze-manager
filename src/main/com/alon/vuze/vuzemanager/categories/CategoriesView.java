@@ -33,7 +33,7 @@ import org.gudy.azureus2.plugins.torrent.TorrentManager;
 
 import java.util.Set;
 
-import static com.alon.vuze.vuzemanager.categories.DownloadAutoDeleter.TA_COMPLETED_TIME;
+import static com.alon.vuze.vuzemanager.categories.CategoryAutoDeleter.TA_COMPLETED_TIME;
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
 

@@ -6,9 +6,7 @@ import com.alon.vuze.vuzemanager.utils.TimeUtils;
 import com.google.inject.Inject;
 import org.gudy.azureus2.plugins.PluginInterface;
 import org.gudy.azureus2.plugins.download.Download;
-import org.gudy.azureus2.plugins.download.DownloadException;
 import org.gudy.azureus2.plugins.download.DownloadManager;
-import org.gudy.azureus2.plugins.download.DownloadRemovalVetoException;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.plugins.torrent.TorrentManager;
 
@@ -17,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class DownloadAutoDeleter {
+public class CategoryAutoDeleter {
   static final String TA_COMPLETED_TIME = "completedTime";
 
   private final DownloadManager downloadManager;
@@ -32,7 +30,7 @@ public class DownloadAutoDeleter {
   private final TorrentAttribute completedTimeAttribute;
 
   @Inject
-  public DownloadAutoDeleter(PluginInterface pluginInterface) {
+  public CategoryAutoDeleter(PluginInterface pluginInterface) {
     downloadManager = pluginInterface.getDownloadManager();
     final TorrentManager torrentManager = pluginInterface.getTorrentManager();
     categoryAttribute = torrentManager.getAttribute(TorrentAttribute.TA_CATEGORY);
@@ -47,14 +45,16 @@ public class DownloadAutoDeleter {
           .filter(category -> category.getAction() == CategoryConfig.Action.AUTO_DELETE)
           .collect(Collectors.toList());
 
-      Arrays.stream(downloadManager.getDownloads())
-          .filter(Download::isComplete)
-          .forEach(download -> checkDownload(download, categories, System.currentTimeMillis()));
+      logger.log("Found %d relevant categories", categories.size());
+      if (categories.size() > 0) {
+        Arrays.stream(downloadManager.getDownloads())
+            .filter(Download::isComplete)
+            .forEach(download -> checkDownload(download, categories, System.currentTimeMillis()));
+      }
       logger.log("Done!!!");
     } catch (Exception e) {
       logger.log(e, "Unexpected error while checking downloads");
     }
-
   }
 
   private void checkDownload(Download download, List<CategoryConfig> categories, long now) {
@@ -71,11 +71,11 @@ public class DownloadAutoDeleter {
         logger.log(String.format("%s age is %s", download.getName(), durationString));
         if (TimeUnit.MILLISECONDS.toDays(duration) > categoryConfig.getDays()) {
           logger.log(String.format("Deleting %s after %s", durationString, download.getName()));
-          try {
-            download.remove(true, true);
-          } catch (DownloadException | DownloadRemovalVetoException e) {
-            logger.log(e, "Error deleting %s", download.getName());
-          }
+//          try {
+//            download.remove(true, true);
+//          } catch (DownloadException | DownloadRemovalVetoException e) {
+//            logger.log(e, "Error deleting %s", download.getName());
+//          }
         }
       }
     }

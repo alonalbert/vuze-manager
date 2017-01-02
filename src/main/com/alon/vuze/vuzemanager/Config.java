@@ -3,6 +3,12 @@ package com.alon.vuze.vuzemanager;
 import com.alon.vuze.vuzemanager.Annotations.PluginDirectory;
 import com.alon.vuze.vuzemanager.categories.CategoryConfig;
 import com.alon.vuze.vuzemanager.logger.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -10,11 +16,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
+@Singleton
 public class Config {
 
   private static final String CATEGORIES = "categories";
