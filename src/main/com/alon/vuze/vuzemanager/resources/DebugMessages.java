@@ -1,5 +1,8 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.resources;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Button;
@@ -19,15 +22,11 @@ import org.gudy.azureus2.core3.util.Debug;
 import org.gudy.azureus2.ui.swt.KeyBindings;
 import org.gudy.azureus2.ui.swt.components.DoubleBufferedLabel;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-class DebugMessages implements Messages {
+public class DebugMessages implements Messages {
   private final Properties properties = new Properties();
-  DebugMessages() throws IOException {
+  public DebugMessages() throws IOException {
     final ClassLoader classLoader = DebugMessages.class.getClassLoader();
-    final String base = VuzeManagerPlugin.class.getPackage().getName().replace(".", "/");
+    final String base = DebugMessages.class.getPackage().getName().replace(".", "/");
     final String path = base + "/messages.properties";
     try (InputStream in = classLoader.getResourceAsStream(path)) {
       properties.load(in);

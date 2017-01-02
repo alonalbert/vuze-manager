@@ -1,5 +1,10 @@
 package com.alon.vuze.vuzemanager;
 
+import static com.alon.vuze.vuzemanager.MainView.VIEWID;
+
+import com.alon.vuze.vuzemanager.logger.VuzeLogger;
+import com.alon.vuze.vuzemanager.resources.Messages;
+import com.alon.vuze.vuzemanager.resources.VuzeMessages;
 import org.gudy.azureus2.plugins.Plugin;
 import org.gudy.azureus2.plugins.PluginException;
 import org.gudy.azureus2.plugins.PluginInterface;
@@ -10,8 +15,6 @@ import org.gudy.azureus2.plugins.ui.UIManagerListener;
 import org.gudy.azureus2.plugins.ui.components.UITextArea;
 import org.gudy.azureus2.plugins.ui.model.BasicPluginViewModel;
 import org.gudy.azureus2.ui.swt.plugins.UISWTInstance;
-
-import static com.alon.vuze.vuzemanager.MainView.VIEWID;
 
 public class VuzeManagerPlugin implements Plugin, UIManagerListener {
 

@@ -1,5 +1,7 @@
 package com.alon.vuze.vuzemanager;
 
+import com.alon.vuze.vuzemanager.categories.CategoryConfig;
+import com.alon.vuze.vuzemanager.logger.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -11,7 +13,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-class Config {
+public class Config {
 
   private static final String CATEGORIES = "categories";
   private final String configFile;
@@ -19,17 +21,17 @@ class Config {
 
   private final Set<CategoryConfig> categories = new HashSet<>();
 
-  Config(String path, Logger logger) {
+  public Config(String path, Logger logger) {
     this.configFile = path + "/vuze-manager-options.json";
     this.logger = logger;
     load();
   }
 
-  Set<CategoryConfig> getCategories() {
+  public Set<CategoryConfig> getCategories() {
     return categories;
   }
 
-  synchronized void save() {
+  public synchronized void save() {
     final File optionsFile = new File(configFile);
     logger.log("storing options to file: %s", optionsFile.getPath());
     try {

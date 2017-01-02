@@ -1,8 +1,13 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.categories;
 
-import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
-import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.REMOVE;
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
 
+import com.alon.vuze.vuzemanager.Config;
+import com.alon.vuze.vuzemanager.logger.Logger;
+import com.alon.vuze.vuzemanager.resources.ImageRepository;
+import com.alon.vuze.vuzemanager.resources.Messages;
+import com.alon.vuze.vuzemanager.utils.Wildcard;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
@@ -29,7 +34,7 @@ import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.plugins.torrent.TorrentManager;
 
-class CatagoriesView extends Composite implements DownloadCompletionListener {
+public class CatagoriesView extends Composite implements DownloadCompletionListener {
 
   private final PluginInterface pluginInterface;
   private final Config config;
@@ -40,7 +45,8 @@ class CatagoriesView extends Composite implements DownloadCompletionListener {
   private final ToolItem remove;
   private final TorrentAttribute categoryAttribute;
 
-  CatagoriesView(Composite parent, PluginInterface pluginInterface, Config config, Logger logger, Messages messages) {
+  public CatagoriesView(Composite parent, PluginInterface pluginInterface, Config config, Logger logger,
+      Messages messages) {
     super(parent, SWT.BORDER);
     this.pluginInterface = pluginInterface;
     this.config = config;
@@ -135,14 +141,14 @@ class CatagoriesView extends Composite implements DownloadCompletionListener {
     if (items.length == 1) {
       final CategoryConfig categoryConfig = (CategoryConfig) items[0].getData();
       final CategoryDialog categoryDialog = new CategoryDialog(
-          getDisplay(), config, messages, categoryConfig);
+          getDisplay(), messages, categoryConfig);
       categoryDialog.setOnOkListener(newCategoryConfig -> handleAddedOrEdited(categoryConfig, newCategoryConfig));
       categoryDialog.open();
     }
   }
 
   private void handleAddItem() {
-    final CategoryDialog categoryDialog = new CategoryDialog(getDisplay(), config, messages);
+    final CategoryDialog categoryDialog = new CategoryDialog(getDisplay(), messages);
     categoryDialog.setOnOkListener(categoryConfig -> handleAddedOrEdited(null, categoryConfig));
     categoryDialog.open();
   }

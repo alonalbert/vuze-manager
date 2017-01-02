@@ -1,4 +1,4 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.utils;
 
 import java.util.regex.Pattern;
 

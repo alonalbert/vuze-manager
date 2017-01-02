@@ -1,7 +1,8 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.utils;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.alon.vuze.vuzemanager.utils.Wildcard;
 import org.junit.Test;
 
 /**

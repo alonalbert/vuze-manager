@@ -1,4 +1,4 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.resources;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ImageRepository {
-  enum ImageResource {
+  public enum ImageResource {
     ADD("add.png"),
     REMOVE("remove.png"),;
 
@@ -21,7 +21,7 @@ public class ImageRepository {
 
   private static final Map<ImageResource, Image> images = new HashMap<>();
 
-  static Image getImage(Display display, ImageResource imageResource) {
+  public static Image getImage(Display display, ImageResource imageResource) {
     Image image = images.get(imageResource);
 
     if (image == null) {

@@ -1,6 +1,6 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.logger;
 
-interface Logger {
+public interface Logger {
   void log(String format, Object... args);
 
   void log(Throwable e, String format, Object... args);

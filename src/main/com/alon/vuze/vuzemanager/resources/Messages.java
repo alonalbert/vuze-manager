@@ -1,4 +1,4 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.resources;
 
 import org.eclipse.swt.widgets.Widget;
 

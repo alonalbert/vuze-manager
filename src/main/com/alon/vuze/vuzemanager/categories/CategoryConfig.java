@@ -1,14 +1,14 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.categories;
 
 import org.json.simple.JSONObject;
 
-class CategoryConfig {
+public class CategoryConfig {
 
   private static final String CATEGORY = "category";
   private static final String ACTION = "action";
   private static final String DAYS = "days";
 
-  enum Action {
+  public enum Action {
     FORCE_SEED("vuzeManager.categories.action.forceSeed"),
     AUTO_DELETE("vuzeManager.categories.action.autoDelete"),;
 
@@ -27,7 +27,7 @@ class CategoryConfig {
   private final Action action;
   private final int days;
 
-  CategoryConfig(String category, Action action, int days) {
+  public CategoryConfig(String category, Action action, int days) {
     this.category = category;
     this.action = action;
     this.days = days;
@@ -45,7 +45,7 @@ class CategoryConfig {
     return days;
   }
 
-  JSONObject toJson() {
+  public JSONObject toJson() {
     final JSONObject json= new JSONObject();
     json.put(CATEGORY, category);
     json.put(ACTION, action.toString());
@@ -53,7 +53,7 @@ class CategoryConfig {
     return json;
   }
 
-  static CategoryConfig fromJson(JSONObject json) {
+  public static CategoryConfig fromJson(JSONObject json) {
     return new CategoryConfig(
         (String) json.get(CATEGORY),
         Action.valueOf((String) json.get(ACTION)),

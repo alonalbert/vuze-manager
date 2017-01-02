@@ -1,8 +1,9 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.categories;
 
-import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
 
-import java.util.Set;
+import com.alon.vuze.vuzemanager.resources.ImageRepository;
+import com.alon.vuze.vuzemanager.resources.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -16,12 +17,10 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.gudy.azureus2.core3.internat.MessageText;
 
 class CategoryDialog {
 
   private final Display display;
-  private final Config config;
   private final Shell shell;
 
   private OnOkListener onOkListener = null;
@@ -30,13 +29,12 @@ class CategoryDialog {
   private final Combo acionCombo;
   private final Spinner daysSpinner;
 
-  CategoryDialog(Display display, Config config, Messages messages) {
-    this(display, config, messages, null);
+  CategoryDialog(Display display, Messages messages) {
+    this(display, messages, null);
   }
 
-  CategoryDialog(Display display, Config config, Messages messages, CategoryConfig categoryConfig) {
+  CategoryDialog(Display display, Messages messages, CategoryConfig categoryConfig) {
     this.display = display;
-    this.config = config;
     shell = new Shell();
     shell.setLayout(new GridLayout());
 
@@ -65,7 +63,7 @@ class CategoryDialog {
     acionCombo = new Combo(body, SWT.DROP_DOWN | SWT.READ_ONLY);
     acionCombo.setLayoutData(valueLayout);
     for (CategoryConfig.Action action : CategoryConfig.Action.values()) {
-      acionCombo.add(MessageText.getString(action.getMessageKey()));
+      acionCombo.add(messages.getString(action.getMessageKey()));
     }
     acionCombo.setText(acionCombo.getItem(0));
 
@@ -109,7 +107,6 @@ class CategoryDialog {
   private void handleOk() {
     final String category = categoryEdit.getText();
     if(!category.isEmpty()) {
-      final Set<CategoryConfig> categories = this.config.getCategories();
       final CategoryConfig.Action action = CategoryConfig.Action.values()[acionCombo.getSelectionIndex()];
       final CategoryConfig categoryConfig = new CategoryConfig(category, action, daysSpinner.getSelection());
       shell.dispose();

@@ -1,4 +1,4 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.logger;
 
 public class DebugLogger implements Logger {
   @Override

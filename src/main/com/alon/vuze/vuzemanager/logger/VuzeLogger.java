@@ -1,4 +1,4 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.logger;
 
 import org.gudy.azureus2.plugins.logging.LoggerChannel;
 import org.gudy.azureus2.plugins.logging.LoggerChannelListener;
@@ -7,11 +7,11 @@ import org.gudy.azureus2.plugins.ui.components.UITextArea;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-class VuzeLogger implements Logger , LoggerChannelListener {
+public class VuzeLogger implements Logger , LoggerChannelListener {
   private final LoggerChannel loggerChannel;
   private final UITextArea logArea;
 
-  VuzeLogger(LoggerChannel loggerChannel, UITextArea logArea) {
+  public VuzeLogger(LoggerChannel loggerChannel, UITextArea logArea) {
     this.loggerChannel = loggerChannel;
     this.logArea = logArea;
     loggerChannel.addListener(this);

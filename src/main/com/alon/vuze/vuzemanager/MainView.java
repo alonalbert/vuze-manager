@@ -1,5 +1,9 @@
 package com.alon.vuze.vuzemanager;
 
+import com.alon.vuze.vuzemanager.categories.CatagoriesView;
+import com.alon.vuze.vuzemanager.logger.Logger;
+import com.alon.vuze.vuzemanager.resources.ImageRepository;
+import com.alon.vuze.vuzemanager.resources.Messages;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;

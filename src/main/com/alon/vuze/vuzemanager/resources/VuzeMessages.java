@@ -1,4 +1,4 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.resources;
 
 import org.eclipse.swt.widgets.Widget;
 import org.gudy.azureus2.core3.internat.MessageText;
