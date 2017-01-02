@@ -4,6 +4,8 @@ import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.
 
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -18,7 +20,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
-class CategoryDialog {
+@SuppressWarnings({"BindingAnnotationWithoutInject", "WeakerAccess"})
+public class CategoryDialog {
 
   private final Display display;
   private final Shell shell;
@@ -28,11 +31,21 @@ class CategoryDialog {
   private final Combo actionCombo;
   private final Spinner daysSpinner;
 
-  CategoryDialog(Display display, Messages messages, OnOkListener onOkListener) {
-    this(display, messages, onOkListener, null);
+  @AssistedInject
+  CategoryDialog(
+      Messages messages,
+      @Assisted Display display,
+      @Assisted OnOkListener onOkListener) {
+    this(messages, display, onOkListener, null);
   }
 
-  CategoryDialog(Display display, Messages messages, OnOkListener onOkListener, CategoryConfig categoryConfig) {
+  @AssistedInject
+  CategoryDialog(
+      Messages messages,
+      @Assisted Display display,
+      @Assisted OnOkListener onOkListener,
+      @SuppressWarnings("SameParameterValue")
+      @Assisted CategoryConfig categoryConfig) {
     this.display = display;
     this.onOkListener = onOkListener;
     shell = new Shell();

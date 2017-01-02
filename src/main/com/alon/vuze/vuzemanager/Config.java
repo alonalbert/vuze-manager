@@ -1,18 +1,19 @@
 package com.alon.vuze.vuzemanager;
 
+import com.alon.vuze.vuzemanager.Annotations.PluginDirectory;
 import com.alon.vuze.vuzemanager.categories.CategoryConfig;
 import com.alon.vuze.vuzemanager.logger.Logger;
-import java.util.stream.Collectors;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 public class Config {
 
@@ -22,7 +23,8 @@ public class Config {
 
   private final Set<CategoryConfig> categories = new HashSet<>();
 
-  public Config(String path, Logger logger) {
+  @Inject
+  public Config(@PluginDirectory String path, Logger logger) {
     this.configFile = path + "/vuze-manager-options.json";
     this.logger = logger;
     load();

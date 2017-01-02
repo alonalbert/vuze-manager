@@ -1,9 +1,9 @@
 package com.alon.vuze.vuzemanager;
 
-import com.alon.vuze.vuzemanager.categories.CategoriesView;
-import com.alon.vuze.vuzemanager.logger.Logger;
+import com.alon.vuze.vuzemanager.categories.CategoriesModule;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
+import com.google.inject.Inject;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -14,23 +14,20 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.gudy.azureus2.plugins.PluginInterface;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
 class MainView implements UISWTViewEventListener {
 
   static final String VIEW_ID = "VuzeManagerView";
-  private final PluginInterface pluginInterface;
-  private final Config config;
-  private final Logger logger;
   private final Messages messages;
 
-  MainView(PluginInterface pluginInterface, Config config, Logger logger, Messages messages) {
-    this.pluginInterface = pluginInterface;
-    this.config = config;
-    this.logger = logger;
+  private final CategoriesModule.Factory categoriesFactory;
+
+  @Inject
+  MainView(Messages messages, CategoriesModule.Factory categoriesFactory) {
     this.messages = messages;
+    this.categoriesFactory = categoriesFactory;
   }
 
   @Override
@@ -74,7 +71,8 @@ class MainView implements UISWTViewEventListener {
 
     final CTabItem tabCategories = new CTabItem(tabFolder, SWT.NULL);
     messages.setLanguageText(tabCategories, "vuzeManager.tab.categories");
-    tabCategories.setControl(new CategoriesView(tabFolder, pluginInterface, config, logger, messages));
+
+    tabCategories.setControl(categoriesFactory.create(tabFolder));
 
     final CTabItem tabPlex = new CTabItem(tabFolder, SWT.NULL);
     messages.setLanguageText(tabPlex, "vuzeManager.tab.plex");

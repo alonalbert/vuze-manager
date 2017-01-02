@@ -1,11 +1,10 @@
 package com.alon.vuze.vuzemanager.logger;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import org.gudy.azureus2.plugins.logging.LoggerChannel;
 import org.gudy.azureus2.plugins.logging.LoggerChannelListener;
 import org.gudy.azureus2.plugins.ui.components.UITextArea;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 public class VuzeLogger implements Logger , LoggerChannelListener {
   private final LoggerChannel loggerChannel;
@@ -15,7 +14,6 @@ public class VuzeLogger implements Logger , LoggerChannelListener {
     this.loggerChannel = loggerChannel;
     this.logArea = logArea;
     loggerChannel.addListener(this);
-
   }
 
   @Override

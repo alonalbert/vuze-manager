@@ -9,6 +9,8 @@ import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.utils.Wildcard;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -33,24 +35,30 @@ import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.plugins.torrent.TorrentManager;
 
+@SuppressWarnings("WeakerAccess")
 public class CategoriesView extends Composite implements DownloadCompletionListener {
 
-  private final PluginInterface pluginInterface;
   private final Config config;
   private final Logger logger;
-  private final Messages messages;
 
   private final Table table;
   private final ToolItem remove;
   private final TorrentAttribute categoryAttribute;
 
-  public CategoriesView(Composite parent, PluginInterface pluginInterface, Config config, Logger logger,
+  @Inject
+  CategoriesModule.Factory factory;
+
+  @Inject
+  public CategoriesView(
+      @SuppressWarnings("BindingAnnotationWithoutInject")
+      @Assisted Composite parent,
+      PluginInterface pluginInterface,
+      Config config,
+      Logger logger,
       Messages messages) {
     super(parent, SWT.BORDER);
-    this.pluginInterface = pluginInterface;
     this.config = config;
     this.logger = logger;
-    this.messages = messages;
 
     final Display display = getDisplay();
 
@@ -139,9 +147,8 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     final TableItem[] items = table.getSelection();
     if (items.length == 1) {
       final CategoryConfig categoryConfig = (CategoryConfig) items[0].getData();
-      final CategoryDialog categoryDialog = new CategoryDialog(
+      final CategoryDialog categoryDialog = factory.create(
           getDisplay(),
-          messages,
           newCategoryConfig -> handleAddedOrEdited(categoryConfig, newCategoryConfig),
           categoryConfig);
       categoryDialog.open();
@@ -149,9 +156,8 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
   }
 
   private void handleAddItem() {
-    final CategoryDialog categoryDialog = new CategoryDialog(
+    final CategoryDialog categoryDialog = factory.create(
         getDisplay(),
-        messages,
         categoryConfig -> handleAddedOrEdited(null, categoryConfig));
     categoryDialog.open();
   }
@@ -194,7 +200,7 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
         config.getCategories().stream().forEachOrdered(this::addCategoryToTable);
       }
     } catch (Exception e) {
-      // TODO: 12/31/16 handle
+      logger.log(e, "Error populating table");
     }
   }
 
