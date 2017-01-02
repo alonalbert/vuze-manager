@@ -11,6 +11,9 @@ import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.utils.Wildcard;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -47,6 +50,7 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
 
   @Inject
   CategoriesModule.Factory factory;
+  private final DownloadManager downloadManager;
 
   @Inject
   public CategoriesView(
@@ -60,6 +64,7 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     this.config = config;
     this.logger = logger;
 
+    downloadManager = pluginInterface.getDownloadManager();
     final Display display = getDisplay();
 
     setLayout(new GridLayout());
@@ -119,7 +124,6 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     final TorrentManager torrentManager = pluginInterface.getTorrentManager();
     categoryAttribute = torrentManager.getAttribute(TorrentAttribute.TA_CATEGORY);
 
-    final DownloadManager downloadManager = pluginInterface.getDownloadManager();
     final DownloadEventNotifier eventNotifier = downloadManager.getGlobalDownloadEventNotifier();
     eventNotifier.addCompletionListener(this);
   }
@@ -210,5 +214,13 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     item.setText(0, categoryConfig.getCategory());
     item.setText(1, MessageText.getString(categoryConfig.getAction().getMessageKey()));
     item.setText(2, String.valueOf(categoryConfig.getDays()));
+  }
+
+  public void autoDeleteDownloads() {
+    final Download[] downloads = downloadManager.getDownloads();
+    final List<Download> d = new ArrayList<>();
+    Arrays.stream(downloadManager.getDownloads())
+        .filter(Download::isComplete)
+        .forEach(System.out::println);
   }
 }
