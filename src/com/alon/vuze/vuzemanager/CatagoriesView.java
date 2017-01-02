@@ -1,5 +1,11 @@
 package com.alon.vuze.vuzemanager;
 
+import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
+import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.REMOVE;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -9,7 +15,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
@@ -23,13 +28,6 @@ import org.gudy.azureus2.plugins.download.DownloadEventNotifier;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.plugins.torrent.TorrentManager;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Set;
-
-import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
-import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.REMOVE;
 
 class CatagoriesView extends Composite implements DownloadCompletionListener {
 
@@ -122,50 +120,60 @@ class CatagoriesView extends Composite implements DownloadCompletionListener {
     final Set<CategoryConfig> categoryConfigs = config.getCategories();
     for (CategoryConfig categoryConfig : categoryConfigs) {
       if (categoryConfig.getAction() == CategoryConfig.Action.FORCE_SEED) {
-
+        final String wildcard = categoryConfig.getCategory();
+        if (new Wildcard(wildcard).matches(category)) {
+          logger.log("Download %s category %s matched wildcard '%s'. Force started.",
+              download, category, wildcard);
+          download.setForceStart(true);
+        }
       }
     }
-    for (String pattern : categoriesEdit.getValue().split(",")) {
-      if (category.matches(pattern.trim())) {
-        download.setForceStart(true);
-        break;
-      }
-    }
-
   }
 
   private void handleItemDoubleClick() {
     final TableItem[] items = table.getSelection();
     if (items.length == 1) {
+      final CategoryConfig categoryConfig = (CategoryConfig) items[0].getData();
       final CategoryDialog categoryDialog = new CategoryDialog(
-          getDisplay(), config, messages, (CategoryConfig) items[0].getData());
-      categoryDialog.setOnOkListener(categoryConfig -> populateTable());
+          getDisplay(), config, messages, categoryConfig);
+      categoryDialog.setOnOkListener(newCategoryConfig -> handleAddedOrEdited(categoryConfig, newCategoryConfig));
       categoryDialog.open();
     }
   }
 
   private void handleAddItem() {
     final CategoryDialog categoryDialog = new CategoryDialog(getDisplay(), config, messages);
-    categoryDialog.setOnOkListener(categoryConfig -> populateTable());
+    categoryDialog.setOnOkListener(categoryConfig -> handleAddedOrEdited(null, categoryConfig));
     categoryDialog.open();
+  }
+
+  private void handleAddedOrEdited(CategoryConfig oldConfig, CategoryConfig newConfig) {
+    final Set<CategoryConfig> categories = config.getCategories();
+    if (oldConfig != null) {
+      categories.remove(oldConfig);
+    }
+    categories.add(newConfig);
+    config.save();
+    populateTable();
   }
 
   private void handleRemoveItem() {
     final TableItem[] items = table.getSelection();
     if(items.length == 1){
-      final MessageBox messageBox = new MessageBox(getShell(),
-          SWT.ICON_QUESTION | SWT.NO | SWT.YES);
-      messageBox.setText("Delete Confirmation");
       final CategoryConfig categoryConfig = (CategoryConfig) items[0].getData();
-      messageBox.setMessage("Are you sure you want to remove the category "
-          + categoryConfig.getCategory() + "?");
-      switch (messageBox.open()){
-        case SWT.YES:
-          this.config.getCategories().remove(categoryConfig);
-          this.config.save();
-          populateTable();
-          remove.setEnabled(false);
-          break;
+      config.getCategories().remove(categoryConfig);
+      config.save();
+      final int oldSelectedIndex = table.getSelectionIndex();
+      populateTable();
+      final int itemCount = table.getItemCount();
+      if (itemCount == 0) {
+        remove.setEnabled(false);
+      } else {
+        if (oldSelectedIndex < itemCount) {
+          table.setSelection(oldSelectedIndex);
+        } else {
+          table.setSelection(itemCount - 1);
+        }
       }
     }
   }

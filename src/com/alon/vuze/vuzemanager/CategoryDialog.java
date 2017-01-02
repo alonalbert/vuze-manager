@@ -1,5 +1,8 @@
 package com.alon.vuze.vuzemanager;
 
+import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
+
+import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -14,10 +17,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.gudy.azureus2.core3.internat.MessageText;
-
-import java.util.Set;
-
-import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
 
 class CategoryDialog {
 
@@ -112,15 +111,10 @@ class CategoryDialog {
     if(!category.isEmpty()) {
       final Set<CategoryConfig> categories = this.config.getCategories();
       final CategoryConfig.Action action = CategoryConfig.Action.values()[acionCombo.getSelectionIndex()];
-      final CategoryConfig cc = new CategoryConfig(category, action, daysSpinner.getSelection());
-      if (categories.contains(cc)) {
-        categories.remove(cc);
-      }
-      categories.add(cc);
+      final CategoryConfig categoryConfig = new CategoryConfig(category, action, daysSpinner.getSelection());
       shell.dispose();
-      this.config.save();
       if (onOkListener != null) {
-        onOkListener.onOk(cc);
+        onOkListener.onOk(categoryConfig);
       }
     }
   }
