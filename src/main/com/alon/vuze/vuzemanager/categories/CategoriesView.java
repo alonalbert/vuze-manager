@@ -31,6 +31,8 @@ import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.plugins.torrent.TorrentManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static com.alon.vuze.vuzemanager.categories.CategoryAutoDeleter.TA_COMPLETED_TIME;
@@ -204,7 +206,9 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     try {
       if (table != null && !table.isDisposed()) {
         table.removeAll();
-        config.getCategories().forEach(this::addCategoryToTable);
+        final List<CategoryConfig> sorted = new ArrayList<>(config.getCategories());
+        sorted.sort(CategoryConfig::compareTo);
+        sorted.forEach(this::addCategoryToTable);
       }
     } catch (Exception e) {
       logger.log(e, "Error populating table");
@@ -215,7 +219,10 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     final TableItem item = new TableItem(table, SWT.NULL);
     item.setData(categoryConfig);
     item.setText(0, categoryConfig.getCategory());
-    item.setText(1, MessageText.getString(categoryConfig.getAction().getMessageKey()));
-    item.setText(2, String.valueOf(categoryConfig.getDays()));
+    final Action action = categoryConfig.getAction();
+    item.setText(1, MessageText.getString(action.getMessageKey()));
+    if (action == Action.AUTO_DELETE) {
+      item.setText(2, String.valueOf(categoryConfig.getDays()));
+    }
   }
 }

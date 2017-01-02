@@ -3,7 +3,7 @@ package com.alon.vuze.vuzemanager.categories;
 import com.alon.vuze.vuzemanager.utils.Wildcard;
 import org.json.simple.JSONObject;
 
-public class CategoryConfig {
+public class CategoryConfig implements Comparable<CategoryConfig> {
 
   private static final String CATEGORY = "category";
   private static final String ACTION = "action";
@@ -81,6 +81,11 @@ public class CategoryConfig {
       return false;
     }
     return action == that.action;
+  }
+
+  @Override
+  public int compareTo(CategoryConfig o) {
+    return category.compareTo(o.category);
   }
 
   @Override
