@@ -17,14 +17,21 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.gudy.azureus2.core3.internat.MessageText;
 import org.gudy.azureus2.plugins.PluginInterface;
+import org.gudy.azureus2.plugins.download.Download;
+import org.gudy.azureus2.plugins.download.DownloadCompletionListener;
+import org.gudy.azureus2.plugins.download.DownloadEventNotifier;
+import org.gudy.azureus2.plugins.download.DownloadManager;
+import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
+import org.gudy.azureus2.plugins.torrent.TorrentManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Set;
 
 import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.ADD;
 import static com.alon.vuze.vuzemanager.ImageRepository.ImageResource.REMOVE;
 
-class CatagoriesView extends Composite {
+class CatagoriesView extends Composite implements DownloadCompletionListener {
 
   private final PluginInterface pluginInterface;
   private final Config config;
@@ -33,6 +40,7 @@ class CatagoriesView extends Composite {
 
   private final Table table;
   private final ToolItem remove;
+  private final TorrentAttribute categoryAttribute;
 
   CatagoriesView(Composite parent, PluginInterface pluginInterface, Config config, Logger logger, Messages messages) {
     super(parent, SWT.BORDER);
@@ -96,6 +104,34 @@ class CatagoriesView extends Composite {
     table.addListener (SWT.MouseDoubleClick, event -> handleItemDoubleClick());
 
     populateTable();
+
+    final TorrentManager torrentManager = pluginInterface.getTorrentManager();
+    categoryAttribute = torrentManager.getAttribute(TorrentAttribute.TA_CATEGORY);
+
+    final DownloadManager downloadManager = pluginInterface.getDownloadManager();
+    final DownloadEventNotifier eventNotifier = downloadManager.getGlobalDownloadEventNotifier();
+    eventNotifier.addCompletionListener(this);
+  }
+
+  @Override
+  public void onCompletion(Download download) {
+    final String category = download.getAttribute(categoryAttribute);
+    if (category == null) {
+      return;
+    }
+    final Set<CategoryConfig> categoryConfigs = config.getCategories();
+    for (CategoryConfig categoryConfig : categoryConfigs) {
+      if (categoryConfig.getAction() == CategoryConfig.Action.FORCE_SEED) {
+
+      }
+    }
+    for (String pattern : categoriesEdit.getValue().split(",")) {
+      if (category.matches(pattern.trim())) {
+        download.setForceStart(true);
+        break;
+      }
+    }
+
   }
 
   private void handleItemDoubleClick() {
@@ -156,5 +192,4 @@ class CatagoriesView extends Composite {
     item.setText(1, MessageText.getString(categoryConfig.getAction().getMessageKey()));
     item.setText(2, String.valueOf(categoryConfig.getDays()));
   }
-
 }
