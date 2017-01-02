@@ -1,5 +1,6 @@
 package com.alon.vuze.vuzemanager.categories;
 
+import com.alon.vuze.vuzemanager.utils.Wildcard;
 import org.json.simple.JSONObject;
 
 public class CategoryConfig {
@@ -24,6 +25,7 @@ public class CategoryConfig {
   }
 
   private final String category;
+  private final Wildcard wildcard;
   private final Action action;
   private final int days;
 
@@ -31,10 +33,15 @@ public class CategoryConfig {
     this.category = category;
     this.action = action;
     this.days = days;
+    wildcard = new Wildcard(category);
   }
 
   String getCategory() {
     return category;
+  }
+
+  Wildcard getWildcard() {
+    return wildcard;
   }
 
   Action getAction() {

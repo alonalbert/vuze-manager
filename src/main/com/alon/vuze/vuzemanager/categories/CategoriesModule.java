@@ -17,5 +17,6 @@ public interface Factory {
   protected void configure() {
     install(new FactoryModuleBuilder()
      .build(Factory.class));
+    bind(DownloadAutoDeleter.class).asEagerSingleton();
   }
 }

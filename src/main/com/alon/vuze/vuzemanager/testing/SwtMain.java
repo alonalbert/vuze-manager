@@ -1,14 +1,10 @@
 package com.alon.vuze.vuzemanager.testing;
 
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
-
 import com.alon.vuze.vuzemanager.Config;
 import com.alon.vuze.vuzemanager.categories.CategoryConfig;
 import com.alon.vuze.vuzemanager.logger.DebugLogger;
 import com.alon.vuze.vuzemanager.resources.DebugMessages;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
-import java.io.IOException;
-import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -22,6 +18,11 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
+
+import java.io.IOException;
+import java.util.Set;
+
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
 
 class SwtMain {
 
@@ -114,7 +115,6 @@ class SwtMain {
       }
     }
     display.dispose();
-
   }
 
   private static void populateTable(Set<CategoryConfig> categories) {

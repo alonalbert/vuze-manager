@@ -1,8 +1,5 @@
 package com.alon.vuze.vuzemanager.categories;
 
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
-
 import com.alon.vuze.vuzemanager.Config;
 import com.alon.vuze.vuzemanager.categories.CategoryConfig.Action;
 import com.alon.vuze.vuzemanager.logger.Logger;
@@ -11,10 +8,6 @@ import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.utils.Wildcard;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -38,15 +31,21 @@ import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.plugins.torrent.TorrentManager;
 
+import java.util.Set;
+
+import static com.alon.vuze.vuzemanager.categories.DownloadAutoDeleter.TA_COMPLETED_TIME;
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
+
 @SuppressWarnings("WeakerAccess")
 public class CategoriesView extends Composite implements DownloadCompletionListener {
-
   private final Config config;
   private final Logger logger;
 
   private final Table table;
   private final ToolItem remove;
   private final TorrentAttribute categoryAttribute;
+  private final TorrentAttribute completedTimeAttribute;
 
   @Inject
   CategoriesModule.Factory factory;
@@ -65,6 +64,11 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     this.logger = logger;
 
     downloadManager = pluginInterface.getDownloadManager();
+
+    final TorrentManager torrentManager = pluginInterface.getTorrentManager();
+    categoryAttribute = torrentManager.getAttribute(TorrentAttribute.TA_CATEGORY);
+    completedTimeAttribute = torrentManager.getPluginAttribute(TA_COMPLETED_TIME);
+
     final Display display = getDisplay();
 
     setLayout(new GridLayout());
@@ -121,15 +125,14 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
 
     populateTable();
 
-    final TorrentManager torrentManager = pluginInterface.getTorrentManager();
-    categoryAttribute = torrentManager.getAttribute(TorrentAttribute.TA_CATEGORY);
-
     final DownloadEventNotifier eventNotifier = downloadManager.getGlobalDownloadEventNotifier();
     eventNotifier.addCompletionListener(this);
   }
 
   @Override
   public void onCompletion(Download download) {
+    download.setLongAttribute(completedTimeAttribute, System.currentTimeMillis());
+
     final String category = download.getAttribute(categoryAttribute);
     if (category == null) {
       return;
@@ -138,8 +141,8 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     categoryConfigs.stream()
         .filter(categoryConfig -> categoryConfig.getAction() == Action.FORCE_SEED)
         .forEach(categoryConfig -> {
-          final String wildcard = categoryConfig.getCategory();
-          if (new Wildcard(wildcard).matches(category)) {
+          final Wildcard wildcard = categoryConfig.getWildcard();
+          if (wildcard.matches(category)) {
             logger.log("Download %s category %s matched wildcard '%s'. Force started.",
                 download, category, wildcard);
             download.setForceStart(true);
@@ -201,7 +204,7 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     try {
       if (table != null && !table.isDisposed()) {
         table.removeAll();
-        config.getCategories().stream().forEachOrdered(this::addCategoryToTable);
+        config.getCategories().forEach(this::addCategoryToTable);
       }
     } catch (Exception e) {
       logger.log(e, "Error populating table");
@@ -214,13 +217,5 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     item.setText(0, categoryConfig.getCategory());
     item.setText(1, MessageText.getString(categoryConfig.getAction().getMessageKey()));
     item.setText(2, String.valueOf(categoryConfig.getDays()));
-  }
-
-  public void autoDeleteDownloads() {
-    final Download[] downloads = downloadManager.getDownloads();
-    final List<Download> d = new ArrayList<>();
-    Arrays.stream(downloadManager.getDownloads())
-        .filter(Download::isComplete)
-        .forEach(System.out::println);
   }
 }
