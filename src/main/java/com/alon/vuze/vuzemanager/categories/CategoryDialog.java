@@ -1,12 +1,14 @@
 package com.alon.vuze.vuzemanager.categories;
 
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
+
 import com.alon.vuze.vuzemanager.categories.CategoryConfig.Action;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -14,12 +16,9 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
 
 @SuppressWarnings({"BindingAnnotationWithoutInject", "WeakerAccess"})
 public class CategoryDialog {
@@ -119,9 +118,10 @@ public class CategoryDialog {
 
   private void onOk() {
     final String category = categoryEdit.getText();
-    if(!category.isEmpty()) {
+    if (!category.isEmpty()) {
       final Action action = Action.values()[actionCombo.getSelectionIndex()];
-      final CategoryConfig categoryConfig = new CategoryConfig(category, action, daysSpinner.getSelection());
+      final CategoryConfig categoryConfig = new CategoryConfig(category, action,
+          daysSpinner.getSelection());
       shell.dispose();
       if (onOkListener != null) {
         onOkListener.onOk(categoryConfig);
@@ -145,16 +145,14 @@ public class CategoryDialog {
 
   void open() {
     shell.pack();
-    final Monitor primary = display.getPrimaryMonitor ();
-    final Rectangle bounds = primary.getBounds ();
-    final Rectangle rect = shell.getBounds ();
-    shell.setLocation (
-        bounds.x + (bounds.width - rect.width) / 2,
-        bounds.y +(bounds.height - rect.height) / 2);
+    final Point pt = display.getCursorLocation();
+    shell.setLocation(pt.x - 50, pt.y + 50);
+
     shell.open();
   }
 
   interface OnOkListener {
+
     void onOk(CategoryConfig categoryConfig);
   }
 }

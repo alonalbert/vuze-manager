@@ -1,6 +1,5 @@
 package com.alon.vuze.vuzemanager.categories;
 
-import static com.alon.vuze.vuzemanager.categories.CategoryAutoDeleter.TA_COMPLETED_TIME;
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
 
@@ -12,6 +11,7 @@ import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.utils.Wildcard;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import com.google.inject.name.Named;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -30,32 +30,38 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.gudy.azureus2.core3.internat.MessageText;
-import org.gudy.azureus2.plugins.PluginInterface;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadCompletionListener;
 import org.gudy.azureus2.plugins.download.DownloadEventNotifier;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
-import org.gudy.azureus2.plugins.torrent.TorrentManager;
 
 @SuppressWarnings("WeakerAccess")
 public class CategoriesView extends Composite implements DownloadCompletionListener {
   private final Config config;
   private final Logger logger;
 
-  private final Table table;
-  private final ToolItem remove;
-  private final TorrentAttribute categoryAttribute;
-  private final TorrentAttribute completedTimeAttribute;
+  @SuppressWarnings("WeakerAccess")
+  @Inject
+  @Named(TorrentAttribute.TA_CATEGORY)
+  TorrentAttribute categoryAttribute;
+
+  @SuppressWarnings("WeakerAccess")
+  @Inject
+  @Named(CategoriesModule.TA_COMPLETED_TIME)
+  TorrentAttribute completedTimeAttribute;
 
   @Inject
   CategoriesModule.Factory factory;
+
+  private final Table table;
+  private final ToolItem remove;
 
   @Inject
   public CategoriesView(
       @SuppressWarnings("BindingAnnotationWithoutInject")
       @Assisted Composite parent,
-      PluginInterface pluginInterface,
+      DownloadManager downloadManager,
       Config config,
       Logger logger,
       Messages messages) {
@@ -63,11 +69,6 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     this.config = config;
     this.logger = logger;
 
-    DownloadManager downloadManager = pluginInterface.getDownloadManager();
-
-    final TorrentManager torrentManager = pluginInterface.getTorrentManager();
-    categoryAttribute = torrentManager.getAttribute(TorrentAttribute.TA_CATEGORY);
-    completedTimeAttribute = torrentManager.getPluginAttribute(TA_COMPLETED_TIME);
 
     final Display display = getDisplay();
 
