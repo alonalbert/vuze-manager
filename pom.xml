@@ -11,19 +11,17 @@
 
   <profiles>
     <profile>
-      <id>build</id>
+      <id>intellij</id>
       <dependencies>
         <dependency>
           <groupId>com.alon</groupId>
           <artifactId>vuze</artifactId>
           <version>5740</version>
-          <scope>provided</scope>
         </dependency>
         <dependency>
           <groupId>org.eclipse.swt</groupId>
           <artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
           <version>4.7M3</version>
-          <scope>provided</scope>
         </dependency>
       </dependencies>
     </profile>
@@ -34,6 +32,7 @@
       <groupId>com.alon</groupId>
       <artifactId>vuze</artifactId>
       <version>5740</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -50,6 +49,7 @@
       <groupId>org.eclipse.swt</groupId>
       <artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
       <version>4.7M3</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.google.inject</groupId>
