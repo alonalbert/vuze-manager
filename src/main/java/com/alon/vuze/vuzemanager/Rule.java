@@ -1,4 +1,4 @@
-package com.alon.vuze.vuzemanager.categories;
+package com.alon.vuze.vuzemanager;
 
 import com.alon.vuze.vuzemanager.utils.Wildcard;
 import org.json.simple.JSONObject;
@@ -10,10 +10,10 @@ public class Rule {
   private static final String ARG = "arg";
 
   public enum Action {
-    FORCE_SEED("vuzeManager.categories.action.forceSeed"),
-    CATEGORY_AUTO_DELETE("vuzeManager.categories.action.categoryAutoDelete"),
-    WATCHED_AUTO_DELETE("vuzeManager.categories.action.watchedAutoDelete"),
-    AUTO_DESTINATION("vuzeManager.categories.action.autoDestination");
+    FORCE_SEED("vuzeManager.rules.action.forceSeed"),
+    CATEGORY_AUTO_DELETE("vuzeManager.rules.action.categoryAutoDelete"),
+    WATCHED_AUTO_DELETE("vuzeManager.rules.action.watchedAutoDelete"),
+    AUTO_DESTINATION("vuzeManager.rules.action.autoDestination");
 
     private final String messageKey;
 
@@ -58,7 +58,7 @@ public class Rule {
     return Integer.parseInt(arg);
   }
 
-  public JSONObject toJson() {
+  JSONObject toJson() {
     final JSONObject json= new JSONObject();
     json.put(CATEGORY, category);
     json.put(ACTION, action.toString());
@@ -66,7 +66,7 @@ public class Rule {
     return json;
   }
 
-  public static Rule fromJson(JSONObject json) {
+  static Rule fromJson(JSONObject json) {
     return new Rule(
         (String) json.get(CATEGORY),
         Action.valueOf((String) json.get(ACTION)),

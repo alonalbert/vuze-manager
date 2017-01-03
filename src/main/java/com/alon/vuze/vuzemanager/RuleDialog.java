@@ -1,13 +1,10 @@
-package com.alon.vuze.vuzemanager.categories;
+package com.alon.vuze.vuzemanager;
 
-import com.alon.vuze.vuzemanager.Config;
-import com.alon.vuze.vuzemanager.categories.Rule.Action;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import java.util.ArrayList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -20,6 +17,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
+
+import java.util.ArrayList;
 
 @SuppressWarnings({"BindingAnnotationWithoutInject", "WeakerAccess"})
 public class RuleDialog {
@@ -56,10 +55,10 @@ public class RuleDialog {
     shell = new Shell();
   }
 
-  RuleDialog initializeAndOpen(Rule rule) {
+  void initializeAndOpen(Rule rule) {
     shell.setLayout(new GridLayout());
 
-    messages.setLanguageText(shell, "vuzeManager.categories.add.popup.title");
+    messages.setLanguageText(shell, "vuzeManager.rules.add.popup.title");
 
     final GridLayout twoColumnLayout = new GridLayout(2, false);
 
@@ -79,12 +78,12 @@ public class RuleDialog {
     wildcardCombo.setLayoutData(valueLayout);
 
     final Label actionLabel = new Label(body, SWT.NULL);
-    messages.setLanguageText(actionLabel, "vuzeManager.categories.add.popup.action");
+    messages.setLanguageText(actionLabel, "vuzeManager.rules.add.popup.action");
     actionLabel.setLayoutData(labelLayout);
 
     actionCombo = new Combo(body, SWT.DROP_DOWN | SWT.READ_ONLY);
     actionCombo.setLayoutData(valueLayout);
-    for (Action action : Action.values()) {
+    for (Rule.Action action : Rule.Action.values()) {
       actionCombo.add(messages.getString(action.getMessageKey()));
     }
 
@@ -96,7 +95,7 @@ public class RuleDialog {
     days.setLayoutData(twoSpanData);
 
     final Label daysLabel = new Label(days, SWT.NULL);
-    messages.setLanguageText(daysLabel, "vuzeManager.categories.add.popup.days");
+    messages.setLanguageText(daysLabel, "vuzeManager.rules.add.popup.days");
     daysLabel.setLayoutData(labelLayout);
 
     daysSpinner = new Spinner(days, SWT.SINGLE | SWT.BORDER);
@@ -109,7 +108,7 @@ public class RuleDialog {
     directory.setLayoutData(twoSpanData);
 
     final Label directoryLabel = new Label(directory, SWT.NULL);
-    messages.setLanguageText(directoryLabel, "vuzeManager.categories.add.popup.directory");
+    messages.setLanguageText(directoryLabel, "vuzeManager.rules.add.popup.directory");
     directoryLabel.setLayoutData(labelLayout);
 
     directoryCombo = new Combo(directory, SWT.SINGLE | SWT.BORDER);
@@ -124,21 +123,21 @@ public class RuleDialog {
 
     final Button cancel = new Button(buttons, SWT.PUSH);
     cancel.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, true));
-    messages.setLanguageText(cancel, "vuzeManager.categories.add.popup.cancel");
+    messages.setLanguageText(cancel, "vuzeManager.rules.add.popup.cancel");
     cancel.addListener(SWT.Selection, event -> onCancel());
 
     final Button ok = new Button(buttons, SWT.PUSH);
     ok.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, false, true));
-    messages.setLanguageText(ok, "vuzeManager.categories.add.popup.ok");
+    messages.setLanguageText(ok, "vuzeManager.rules.add.popup.ok");
     ok.addListener(SWT.Selection, event -> onOk());
 
     if (rule != null) {
       wildcardCombo.setText(rule.getCategory());
-      final Action action = rule.getAction();
+      final Rule.Action action = rule.getAction();
       actionCombo.setText(actionCombo.getItem(action.ordinal()));
-      if (action == Action.CATEGORY_AUTO_DELETE || action == Action.WATCHED_AUTO_DELETE) {
+      if (action == Rule.Action.CATEGORY_AUTO_DELETE || action == Rule.Action.WATCHED_AUTO_DELETE) {
         daysSpinner.setSelection(rule.getArgAsInt());
-      } else if (action == Action.AUTO_DESTINATION) {
+      } else if (action == Rule.Action.AUTO_DESTINATION) {
         directoryCombo.setText(rule.getArg());
       }
     }
@@ -146,7 +145,6 @@ public class RuleDialog {
     final Point pt = display.getCursorLocation();
     shell.setLocation(pt.x - 50, pt.y + 50);
     shell.open();
-    return this;
   }
 
   private void onCancel() {
@@ -156,7 +154,7 @@ public class RuleDialog {
   private void onOk() {
     final String wildcard = wildcardCombo.getText();
     if (!wildcard.isEmpty()) {
-      final Action action = getAction();
+      final Rule.Action action = getAction();
 
       final Rule rule;
       switch (action) {
@@ -169,9 +167,9 @@ public class RuleDialog {
               String.valueOf(daysSpinner.getSelection()));
           break;
         case AUTO_DESTINATION:
-          final String direcotry = directoryCombo.getText();
-          rule = new Rule(wildcard, action, direcotry);
-          config.addDirectory(direcotry);
+          final String directory = directoryCombo.getText();
+          rule = new Rule(wildcard, action, directory);
+          config.addDirectory(directory);
           break;
         default:
           throw new RuntimeException("Should never happen");
@@ -184,12 +182,12 @@ public class RuleDialog {
     }
   }
 
-  private Action getAction() {
-    return Action.values()[actionCombo.getSelectionIndex()];
+  private Rule.Action getAction() {
+    return Rule.Action.values()[actionCombo.getSelectionIndex()];
   }
 
   private void onActionChanged() {
-    final Action action = getAction();
+    final Rule.Action action = getAction();
     switch (action) {
       case FORCE_SEED:
         setQualifierToCategory();
@@ -215,7 +213,7 @@ public class RuleDialog {
   }
 
   private void setQualifierToCategory() {
-    messages.setLanguageText(wildcardLabel, "vuzeManager.categories.add.popup.category");
+    messages.setLanguageText(wildcardLabel, "vuzeManager.rules.add.popup.category");
     wildcardCombo.removeAll();
     for (String category : categoryAttribute.getDefinedValues()) {
       wildcardCombo.add(category);
@@ -223,12 +221,12 @@ public class RuleDialog {
   }
 
   private void setQualifierToSection() {
-    messages.setLanguageText(wildcardLabel, "vuzeManager.categories.add.popup.section");
+    messages.setLanguageText(wildcardLabel, "vuzeManager.rules.add.popup.section");
     wildcardCombo.removeAll();
   }
 
   private void setQualifierToTorrentName() {
-    messages.setLanguageText(wildcardLabel, "vuzeManager.categories.add.popup.torrent");
+    messages.setLanguageText(wildcardLabel, "vuzeManager.rules.add.popup.torrent");
     wildcardCombo.removeAll();
     final ArrayList<String> directories = config.getDirectories();
     for (String directory : directories) {

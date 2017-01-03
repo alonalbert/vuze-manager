@@ -3,6 +3,8 @@ package com.alon.vuze.vuzemanager.logger;
 import org.gudy.azureus2.plugins.logging.LoggerChannel;
 import org.gudy.azureus2.plugins.logging.LoggerChannelListener;
 import org.gudy.azureus2.plugins.ui.components.UITextArea;
+import org.gudy.azureus2.plugins.ui.components.UITextField;
+import org.gudy.azureus2.plugins.ui.model.BasicPluginViewModel;
 
 import javax.inject.Singleton;
 import java.io.PrintWriter;
@@ -12,10 +14,12 @@ import java.io.StringWriter;
 public class VuzeLogger implements Logger , LoggerChannelListener {
   private final LoggerChannel loggerChannel;
   private final UITextArea logArea;
+  private final UITextField activity;
 
-  public VuzeLogger(LoggerChannel loggerChannel, UITextArea logArea) {
+  public VuzeLogger(LoggerChannel loggerChannel, BasicPluginViewModel viewModel) {
     this.loggerChannel = loggerChannel;
-    this.logArea = logArea;
+    logArea = viewModel.getLogArea();
+    activity = viewModel.getActivity();
     loggerChannel.addListener(this);
   }
 
@@ -27,6 +31,11 @@ public class VuzeLogger implements Logger , LoggerChannelListener {
   @Override
   public void log(Throwable e, String format, Object... args) {
     loggerChannel.log(String.format(format, args), e);
+  }
+
+  @Override
+  public void setStatus(String status) {
+    activity.setText(status);
   }
 
   @Override

@@ -6,6 +6,7 @@ public class Wildcard {
 
   private final Pattern pattern;
 
+  @SuppressWarnings("ReplaceAllDot")
   public Wildcard(String wildcard) {
     final String regex = wildcard
         .replaceAll(".", "[$0]")

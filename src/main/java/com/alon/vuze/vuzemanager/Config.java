@@ -1,9 +1,14 @@
 package com.alon.vuze.vuzemanager;
 
 import com.alon.vuze.vuzemanager.Annotations.PluginDirectory;
-import com.alon.vuze.vuzemanager.categories.Rule;
-import com.alon.vuze.vuzemanager.categories.Rule.Action;
+import com.alon.vuze.vuzemanager.Rule.Action;
 import com.alon.vuze.vuzemanager.logger.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -13,11 +18,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 @Singleton
 public class Config {
@@ -25,9 +25,9 @@ public class Config {
   private static final String RULES = "rules";
   private static final String DIRECTORIES = "directories";
   private static final String LAST_USED_ACTION = "lastUsedAction";
-  public static final String COLUMN_NAME = "columnName";
-  public static final String COLUMN_ACTION = "columnAction";
-  public static final String COLUMN_ARG = "columnArg";
+  static final String COLUMN_NAME = "columnName";
+  static final String COLUMN_ACTION = "columnAction";
+  static final String COLUMN_ARG = "columnArg";
   private final String configFile;
   private final Logger logger;
 
@@ -42,20 +42,20 @@ public class Config {
     load();
   }
 
-  public Set<Rule> getRules() {
+  Set<Rule> getRules() {
     return rules;
   }
 
 
-  public Action getLastUsedAction() {
+  Action getLastUsedAction() {
     return lastUsedAction;
   }
 
-  public void setLastUsedAction(Action lastUsedAction) {
+  void setLastUsedAction(Action lastUsedAction) {
     this.lastUsedAction = lastUsedAction;
   }
 
-  public synchronized void save() {
+  synchronized void save() {
     final File optionsFile = new File(configFile);
     logger.log("storing options to file: %s", optionsFile.getPath());
     try {
@@ -69,11 +69,11 @@ public class Config {
     }
   }
 
-  public ArrayList<String> getDirectories() {
+  ArrayList<String> getDirectories() {
     return directories;
   }
 
-  public void addDirectory(String directory) {
+  void addDirectory(String directory) {
     directories.removeIf(Predicate.isEqual(directory));
     directories.add(0, directory);
   }

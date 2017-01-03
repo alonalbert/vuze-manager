@@ -1,21 +1,10 @@
-package com.alon.vuze.vuzemanager.categories;
+package com.alon.vuze.vuzemanager;
 
-import static com.alon.vuze.vuzemanager.categories.Rule.Action.FORCE_SEED;
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
-import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
-
-import com.alon.vuze.vuzemanager.Config;
-import com.alon.vuze.vuzemanager.categories.Rule.Action;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -42,8 +31,17 @@ import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
+import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
+
 @SuppressWarnings("WeakerAccess")
-public class CategoriesView implements UISWTViewEventListener, DownloadCompletionListener {
+public class RulesView implements UISWTViewEventListener, DownloadCompletionListener {
 
   @Inject
   private Config config;
@@ -67,17 +65,17 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
 
   @SuppressWarnings("WeakerAccess")
   @Inject
-  @Named(CategoriesModule.TA_COMPLETED_TIME)
+  @Named(VuzeManagerModule.TA_COMPLETED_TIME)
   TorrentAttribute completedTimeAttribute;
 
   @Inject
-  CategoriesModule.Factory factory;
+  VuzeManagerModule.Factory factory;
 
   private Table table;
   private ToolItem remove;
 
   @Inject
-  public CategoriesView() {
+  public RulesView() {
   }
 
   @Override
@@ -101,13 +99,13 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     root.setLayoutData(new GridData(GridData.FILL_BOTH));
 
     final Label label = new Label(root, SWT.NULL);
-    messages.setLanguageText(label, "vuzeManager.categories.label");
+    messages.setLanguageText(label, "vuzeManager.rules.label");
 
     final ToolBar toolBar = new ToolBar(root, SWT.BORDER | SWT.FLAT);
 
     final ToolItem add = new ToolItem(toolBar, SWT.PUSH);
     add.setImage(imageRepository.getImage(display, ADD));
-    messages.setLanguageTooltip(add, "vuzeManager.categories.add");
+    messages.setLanguageTooltip(add, "vuzeManager.rules.add");
     add.addListener(SWT.Selection, e -> handleAddItem());
 
     table = new Table(root,
@@ -115,7 +113,7 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
 
     remove = new ToolItem(toolBar, SWT.PUSH);
     remove.setImage(imageRepository.getImage(display, REMOVE));
-    messages.setLanguageTooltip(remove, "vuzeManager.categories.remove");
+    messages.setLanguageTooltip(remove, "vuzeManager.rules.remove");
     remove.setEnabled(false);
     remove.addListener(SWT.Selection, e -> handleRemoveItem());
 
@@ -124,17 +122,17 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
 
     // TODO: 12/31/16 Persist column widths in config
     final TableColumn name = new TableColumn(table, SWT.NULL);
-    messages.setLanguageText(name, "vuzeManager.categories.column.name");
+    messages.setLanguageText(name, "vuzeManager.rules.column.name");
     name.setWidth(200);
     name.setData(Config.COLUMN_NAME);
 
     final TableColumn action = new TableColumn(table, SWT.NULL);
-    messages.setLanguageText(action, "vuzeManager.categories.column.action");
+    messages.setLanguageText(action, "vuzeManager.rules.column.action");
     action.setWidth(250);
     action.setData(Config.COLUMN_ACTION);
 
     final TableColumn arg = new TableColumn(table, SWT.NULL);
-    messages.setLanguageText(arg, "vuzeManager.categories.column.arg");
+    messages.setLanguageText(arg, "vuzeManager.rules.column.arg");
     arg.setWidth(600);
     arg.setData(Config.COLUMN_ARG);
 
@@ -185,7 +183,7 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     }
     final Set<Rule> rules = config.getRules();
     rules.stream()
-        .filter(rule -> rule.getAction() == FORCE_SEED && rule.getWildcard().matches(category))
+        .filter(rule -> rule.getAction() == Rule.Action.FORCE_SEED && rule.getWildcard().matches(category))
         .forEach(rule -> forceStart(download));
   }
 
@@ -262,7 +260,7 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     final TableItem item = new TableItem(table, SWT.NULL);
     item.setData(rule);
     item.setText(0, rule.getCategory());
-    final Action action = rule.getAction();
+    final Rule.Action action = rule.getAction();
     item.setText(1, MessageText.getString(action.getMessageKey()));
     switch (action) {
       case FORCE_SEED:

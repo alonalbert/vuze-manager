@@ -11,4 +11,9 @@ public class DebugLogger implements Logger {
     System.out.printf(format + "\n", (Object[]) args);
     e.printStackTrace();
   }
+
+  @Override
+  public void setStatus(String title) {
+
+  }
 }

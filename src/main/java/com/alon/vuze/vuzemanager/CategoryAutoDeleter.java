@@ -1,47 +1,42 @@
-package com.alon.vuze.vuzemanager.categories;
+package com.alon.vuze.vuzemanager;
 
-import com.alon.vuze.vuzemanager.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.utils.TimeUtils;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 
-public class CategoryAutoDeleter {
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
-  @SuppressWarnings("WeakerAccess")
+class CategoryAutoDeleter {
+
   @Inject
-  DownloadManager downloadManager;
+  private DownloadManager downloadManager;
 
-  @SuppressWarnings("WeakerAccess")
   @Inject
-  Logger logger;
+  private Logger logger;
 
-  @SuppressWarnings("WeakerAccess")
   @Inject
-  Config config;
+  private Config config;
 
-  @SuppressWarnings("WeakerAccess")
   @Inject
   @Named(TorrentAttribute.TA_CATEGORY)
-  TorrentAttribute categoryAttribute;
+  private TorrentAttribute categoryAttribute;
 
-  @SuppressWarnings("WeakerAccess")
   @Inject
-  @Named(CategoriesModule.TA_COMPLETED_TIME)
-  TorrentAttribute completedTimeAttribute;
+  @Named(VuzeManagerModule.TA_COMPLETED_TIME)
+  private TorrentAttribute completedTimeAttribute;
 
   @Inject
   public CategoryAutoDeleter() {
   }
 
-  public void autoDeleteDownloads() {
+  void autoDeleteDownloads() {
     try {
       logger.log("Checking downloads...");
       final List<Rule> categories = config.getRules().stream()
