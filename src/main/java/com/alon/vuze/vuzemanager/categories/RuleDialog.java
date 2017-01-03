@@ -33,15 +33,14 @@ public class RuleDialog {
   private final OnOkListener onOkListener;
 
   private final Combo wildcardCombo;
-  private Label wildcardLabel;
+  private final Label wildcardLabel;
 
   private final Combo actionCombo;
 
   private final Spinner daysSpinner;
 
-  private Label directoryLabel;
-  private Text directoryText;
-  private Composite days;
+  private final Text directoryText;
+  private final Composite days;
   private final Composite directory;
 
   @AssistedInject
@@ -59,7 +58,7 @@ public class RuleDialog {
       @Named(TorrentAttribute.TA_CATEGORY) TorrentAttribute categoryAttribute,
       @Assisted Display display,
       @Assisted OnOkListener onOkListener,
-      @Assisted Rule rule) {
+      @SuppressWarnings("SameParameterValue") @Assisted Rule rule) {
     this.messages = messages;
     this.categoryAttribute = categoryAttribute;
     this.display = display;
@@ -117,7 +116,7 @@ public class RuleDialog {
     directory.setLayout(twoColumnLayout);
     directory.setLayoutData(twoSpanData);
 
-    directoryLabel = new Label(directory, SWT.NULL);
+    Label directoryLabel = new Label(directory, SWT.NULL);
     messages.setLanguageText(directoryLabel, "vuzeManager.categories.add.popup.directory");
     directoryLabel.setLayoutData(labelLayout);
 

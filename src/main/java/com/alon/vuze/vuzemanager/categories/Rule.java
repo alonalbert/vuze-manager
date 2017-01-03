@@ -9,11 +9,11 @@ public class Rule {
   private static final String ACTION = "action";
   private static final String ARG = "arg";
 
-  public enum Action {
+  enum Action {
     FORCE_SEED("vuzeManager.categories.action.forceSeed"),
     CATEGORY_AUTO_DELETE("vuzeManager.categories.action.categoryAutoDelete"),
     WATCHED_AUTO_DELETE("vuzeManager.categories.action.watchedAutoDelete"),
-    AUTO_DESTINATION("vuzeManager.categories.action.audoDestination");
+    AUTO_DESTINATION("vuzeManager.categories.action.autoDestination");
 
     private final String messageKey;
 
@@ -31,7 +31,7 @@ public class Rule {
   private final Action action;
   private final String arg;
 
-  public Rule(String category, Action action, String arg) {
+  Rule(String category, Action action, String arg) {
     this.category = category;
     this.action = action;
     this.arg = arg;
@@ -50,11 +50,11 @@ public class Rule {
     return action;
   }
 
-  public String getArg() {
+  String getArg() {
     return arg;
   }
 
-  public int getArgAsInt() {
+  int getArgAsInt() {
     return Integer.parseInt(arg);
   }
 
