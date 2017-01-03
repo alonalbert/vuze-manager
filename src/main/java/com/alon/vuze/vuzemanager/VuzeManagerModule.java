@@ -4,6 +4,7 @@ import com.alon.vuze.vuzemanager.Annotations.PluginDirectory;
 import com.alon.vuze.vuzemanager.categories.CategoriesModule;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.logger.VuzeLogger;
+import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.resources.VuzeMessages;
 import com.google.inject.AbstractModule;
@@ -42,6 +43,7 @@ class VuzeManagerModule extends AbstractModule {
         .toInstance(pluginInterface.getPluginDirectoryName());
     bind(Logger.class).toInstance(logger);
     bind(Messages.class).toInstance(messages);
+    bind(ImageRepository.class);
 
     for (TorrentAttribute torrentAttribute : torrentManager.getDefinedAttributes()) {
       bind(TorrentAttribute.class).annotatedWith(Names.named(torrentAttribute.getName()))

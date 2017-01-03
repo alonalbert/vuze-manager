@@ -52,6 +52,9 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
   private Messages messages;
 
   @Inject
+  private ImageRepository imageRepository;
+
+  @Inject
   DownloadManager downloadManager;
 
   @SuppressWarnings("WeakerAccess")
@@ -100,7 +103,7 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     final ToolBar toolBar = new ToolBar(root, SWT.BORDER | SWT.FLAT);
 
     final ToolItem add = new ToolItem(toolBar, SWT.PUSH);
-    add.setImage(ImageRepository.getImage(display, ADD));
+    add.setImage(imageRepository.getImage(display, ADD));
     messages.setLanguageTooltip(add, "vuzeManager.categories.add");
     add.addListener(SWT.Selection, e -> handleAddItem());
 
@@ -108,7 +111,7 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
         SWT.SINGLE | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
 
     remove = new ToolItem(toolBar, SWT.PUSH);
-    remove.setImage(ImageRepository.getImage(display, REMOVE));
+    remove.setImage(imageRepository.getImage(display, REMOVE));
     messages.setLanguageTooltip(remove, "vuzeManager.categories.remove");
     remove.setEnabled(false);
     remove.addListener(SWT.Selection, e -> handleRemoveItem());
@@ -150,7 +153,7 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
   }
 
   private void delete() {
-    ImageRepository.unLoadImages();
+    imageRepository.unLoadImages();
   }
 
   @Override

@@ -1,13 +1,16 @@
 package com.alon.vuze.vuzemanager.resources;
 
+import com.alon.vuze.vuzemanager.logger.Logger;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.widgets.Display;
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-
+@Singleton
 public class ImageRepository {
   public enum ImageResource {
     ADD("add.png"),
@@ -20,9 +23,17 @@ public class ImageRepository {
     }
   }
 
-  private static final Map<ImageResource, Image> images = new HashMap<>();
+  @Inject
+  private Logger logger;
 
-  public static Image getImage(Display display, ImageResource imageResource) {
+  private final Map<ImageResource, Image> images = new HashMap<>();
+
+
+  @Inject
+  public ImageRepository() {
+  }
+
+  public Image getImage(Display display, ImageResource imageResource) {
     Image image = images.get(imageResource);
 
     if (image == null) {
@@ -33,14 +44,13 @@ public class ImageRepository {
         image = new Image(display, in);
         images.put(imageResource, image);
       } else {
-        // TODO: 12/31/16 logger
-        System.out.println("ImageRepository:getImage:: Resource not found: " + path);
+        logger.log("ImageRepository:getImage:: Resource not found: %s", path);
       }
     }
     return image;
   }
 
-  public static void unLoadImages() {
+  public void unLoadImages() {
     images.values().forEach(Resource::dispose);
   }
 }

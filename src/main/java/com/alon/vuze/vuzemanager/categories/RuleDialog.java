@@ -1,10 +1,7 @@
 package com.alon.vuze.vuzemanager.categories;
 
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
-
 import com.alon.vuze.vuzemanager.Config;
 import com.alon.vuze.vuzemanager.categories.Rule.Action;
-import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -63,7 +60,6 @@ public class RuleDialog {
     shell.setLayout(new GridLayout());
 
     messages.setLanguageText(shell, "vuzeManager.categories.add.popup.title");
-    shell.setImage(ImageRepository.getImage(display, ADD));
 
     final GridLayout twoColumnLayout = new GridLayout(2, false);
 
