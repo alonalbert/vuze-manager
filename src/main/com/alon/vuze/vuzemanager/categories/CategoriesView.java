@@ -51,7 +51,6 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
 
   @Inject
   CategoriesModule.Factory factory;
-  private final DownloadManager downloadManager;
 
   @Inject
   public CategoriesView(
@@ -65,7 +64,7 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     this.config = config;
     this.logger = logger;
 
-    downloadManager = pluginInterface.getDownloadManager();
+    DownloadManager downloadManager = pluginInterface.getDownloadManager();
 
     final TorrentManager torrentManager = pluginInterface.getTorrentManager();
     categoryAttribute = torrentManager.getAttribute(TorrentAttribute.TA_CATEGORY);
