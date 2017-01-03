@@ -1,6 +1,6 @@
 package com.alon.vuze.vuzemanager.categories;
 
-import com.alon.vuze.vuzemanager.categories.CategoryDialog.OnOkListener;
+import com.alon.vuze.vuzemanager.categories.RuleDialog.OnOkListener;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
@@ -20,8 +20,8 @@ public class CategoriesModule extends AbstractModule {
   }
 
   public interface Factory {
-    CategoryDialog create(Display display, OnOkListener onOkListener);
-    CategoryDialog create(Display display, OnOkListener onOkListener, CategoryConfig categoryConfig);
+    RuleDialog create(Display display, OnOkListener onOkListener);
+    RuleDialog create(Display display, OnOkListener onOkListener, Rule rule);
  }
 
   @Override

@@ -1,15 +1,15 @@
 package com.alon.vuze.vuzemanager.categories;
 
+import static com.alon.vuze.vuzemanager.categories.Rule.Action.FORCE_SEED;
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
 import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
 
 import com.alon.vuze.vuzemanager.Config;
-import com.alon.vuze.vuzemanager.categories.CategoryConfig.Action;
+import com.alon.vuze.vuzemanager.categories.Rule.Action;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
-import com.alon.vuze.vuzemanager.utils.Wildcard;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import java.util.ArrayList;
@@ -126,8 +126,8 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     action.setWidth(250);
 
     final TableColumn days = new TableColumn(table, SWT.NULL);
-    messages.setLanguageText(days, "vuzeManager.categories.column.days");
-    days.setWidth(200);
+    messages.setLanguageText(days, "vuzeManager.categories.column.arg");
+    days.setWidth(600);
 
     //listener to deselect if outside an item
     table.addMouseListener(new MouseAdapter() {
@@ -161,40 +161,38 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     if (category == null) {
       return;
     }
-    final Set<CategoryConfig> categoryConfigs = config.getCategories();
-    categoryConfigs.stream()
-        .filter(categoryConfig -> categoryConfig.getAction() == Action.FORCE_SEED)
-        .forEach(categoryConfig -> {
-          final Wildcard wildcard = categoryConfig.getWildcard();
-          if (wildcard.matches(category)) {
-            logger.log("Download %s category %s matched wildcard '%s'. Force started.",
-                download, category, wildcard);
-            download.setForceStart(true);
-          }
-        });
+    final Set<Rule> rules = config.getCategories();
+    rules.stream()
+        .filter(rule -> rule.getAction() == FORCE_SEED && rule.getWildcard().matches(category))
+        .forEach(rule -> forceStart(download));
+  }
+
+  private void forceStart(Download download) {
+    logger.log("Download %s force started.", download);
+    download.setForceStart(true);
   }
 
   private void handleItemDoubleClick() {
     final TableItem[] items = table.getSelection();
     if (items.length == 1) {
-      final CategoryConfig categoryConfig = (CategoryConfig) items[0].getData();
-      final CategoryDialog categoryDialog = factory.create(
+      final Rule rule = (Rule) items[0].getData();
+      final RuleDialog ruleDialog = factory.create(
           getDisplay(),
-          newCategoryConfig -> handleAddedOrEdited(categoryConfig, newCategoryConfig),
-          categoryConfig);
-      categoryDialog.open();
+          newRule -> handleAddedOrEdited(rule, newRule),
+          rule);
+      ruleDialog.open();
     }
   }
 
   private void handleAddItem() {
-    final CategoryDialog categoryDialog = factory.create(
+    final RuleDialog ruleDialog = factory.create(
         getDisplay(),
-        categoryConfig -> handleAddedOrEdited(null, categoryConfig));
-    categoryDialog.open();
+        rule -> handleAddedOrEdited(null, rule));
+    ruleDialog.open();
   }
 
-  private void handleAddedOrEdited(CategoryConfig oldConfig, CategoryConfig newConfig) {
-    final Set<CategoryConfig> categories = config.getCategories();
+  private void handleAddedOrEdited(Rule oldConfig, Rule newConfig) {
+    final Set<Rule> categories = config.getCategories();
     if (oldConfig != null) {
       categories.remove(oldConfig);
     }
@@ -206,8 +204,8 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
   private void handleRemoveItem() {
     final TableItem[] items = table.getSelection();
     if(items.length == 1){
-      final CategoryConfig categoryConfig = (CategoryConfig) items[0].getData();
-      config.getCategories().remove(categoryConfig);
+      final Rule rule = (Rule) items[0].getData();
+      config.getCategories().remove(rule);
       config.save();
       final int oldSelectedIndex = table.getSelectionIndex();
       populateTable();
@@ -228,10 +226,10 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     try {
       if (table != null && !table.isDisposed()) {
         table.removeAll();
-        final List<CategoryConfig> sorted = new ArrayList<>(config.getCategories());
+        final List<Rule> sorted = new ArrayList<>(config.getCategories());
         sorted.sort(Comparator
-            .comparing(CategoryConfig::getAction)
-            .thenComparing(CategoryConfig::getCategory));
+            .comparing(Rule::getAction)
+            .thenComparing(Rule::getCategory));
         sorted.forEach(this::addCategoryToTable);
       }
     } catch (Exception e) {
@@ -239,14 +237,20 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     }
   }
 
-  private void addCategoryToTable(CategoryConfig categoryConfig) {
+  private void addCategoryToTable(Rule rule) {
     final TableItem item = new TableItem(table, SWT.NULL);
-    item.setData(categoryConfig);
-    item.setText(0, categoryConfig.getCategory());
-    final Action action = categoryConfig.getAction();
+    item.setData(rule);
+    item.setText(0, rule.getCategory());
+    final Action action = rule.getAction();
     item.setText(1, MessageText.getString(action.getMessageKey()));
-    if (action == Action.CATEGORY_AUTO_DELETE) {
-      item.setText(2, String.valueOf(categoryConfig.getDays()));
+    switch (action) {
+      case FORCE_SEED:
+        break;
+      case CATEGORY_AUTO_DELETE:
+      case WATCHED_AUTO_DELETE:
+      case AUTO_DESTINATION:
+        item.setText(2, String.valueOf(rule.getArg()));
+        break;
     }
   }
 

@@ -44,8 +44,8 @@ public class CategoryAutoDeleter {
   public void autoDeleteDownloads() {
     try {
       logger.log("Checking downloads...");
-      final List<CategoryConfig> categories = config.getCategories().stream()
-          .filter(category -> category.getAction() == CategoryConfig.Action.CATEGORY_AUTO_DELETE)
+      final List<Rule> categories = config.getCategories().stream()
+          .filter(category -> category.getAction() == Rule.Action.CATEGORY_AUTO_DELETE)
           .collect(Collectors.toList());
 
       logger.log("Found %d relevant categories", categories.size());
@@ -60,19 +60,19 @@ public class CategoryAutoDeleter {
     }
   }
 
-  private void checkDownload(Download download, List<CategoryConfig> categories, long now) {
+  private void checkDownload(Download download, List<Rule> categories, long now) {
     final long completedTime = download.getLongAttribute(completedTimeAttribute);
     if (completedTime == 0) {
       download.setLongAttribute(completedTimeAttribute, now);
       return;
     }
     final String category = download.getAttribute(categoryAttribute);
-    for (CategoryConfig categoryConfig : categories) {
-      if (categoryConfig.getWildcard().matches(category)) {
+    for (Rule rule : categories) {
+      if (rule.getWildcard().matches(category)) {
         final long duration = now - completedTime;
         final String durationString = TimeUtils.formatDuration(duration);
         logger.log(String.format("%s age is %s", download.getName(), durationString));
-        if (TimeUnit.MILLISECONDS.toDays(duration) > categoryConfig.getDays()) {
+        if (TimeUnit.MILLISECONDS.toDays(duration) > rule.getArgAsInt()) {
           logger.log(String.format("Deleting %s after %s", durationString, download.getName()));
 //          try {
 //            download.remove(true, true);

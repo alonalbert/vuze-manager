@@ -3,16 +3,17 @@ package com.alon.vuze.vuzemanager.categories;
 import com.alon.vuze.vuzemanager.utils.Wildcard;
 import org.json.simple.JSONObject;
 
-public class CategoryConfig {
+public class Rule {
 
   private static final String CATEGORY = "category";
   private static final String ACTION = "action";
-  private static final String DAYS = "days";
+  private static final String ARG = "arg";
 
   public enum Action {
     FORCE_SEED("vuzeManager.categories.action.forceSeed"),
     CATEGORY_AUTO_DELETE("vuzeManager.categories.action.categoryAutoDelete"),
-    WATCHED_AUTO_DELETE("vuzeManager.categories.action.watchedAutoDelete");
+    WATCHED_AUTO_DELETE("vuzeManager.categories.action.watchedAutoDelete"),
+    AUTO_DESTINATION("vuzeManager.categories.action.audoDestination");
 
     private final String messageKey;
 
@@ -28,12 +29,12 @@ public class CategoryConfig {
   private final String category;
   private final Wildcard wildcard;
   private final Action action;
-  private final int days;
+  private final String arg;
 
-  public CategoryConfig(String category, Action action, int days) {
+  public Rule(String category, Action action, String arg) {
     this.category = category;
     this.action = action;
-    this.days = days;
+    this.arg = arg;
     wildcard = new Wildcard(category);
   }
 
@@ -49,23 +50,27 @@ public class CategoryConfig {
     return action;
   }
 
-  int getDays() {
-    return days;
+  public String getArg() {
+    return arg;
+  }
+
+  public int getArgAsInt() {
+    return Integer.parseInt(arg);
   }
 
   public JSONObject toJson() {
     final JSONObject json= new JSONObject();
     json.put(CATEGORY, category);
     json.put(ACTION, action.toString());
-    json.put(DAYS, days);
+    json.put(ARG, arg);
     return json;
   }
 
-  public static CategoryConfig fromJson(JSONObject json) {
-    return new CategoryConfig(
+  public static Rule fromJson(JSONObject json) {
+    return new Rule(
         (String) json.get(CATEGORY),
         Action.valueOf((String) json.get(ACTION)),
-        (int) (long) json.get(DAYS));
+        (String) json.get(ARG));
   }
 
   @Override
@@ -76,7 +81,7 @@ public class CategoryConfig {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    final CategoryConfig that = (CategoryConfig) o;
+    final Rule that = (Rule) o;
     //noinspection SimplifiableIfStatement
     if (!category.equals(that.category)) {
       return false;
@@ -86,10 +91,10 @@ public class CategoryConfig {
 
   @Override
   public String toString() {
-    return "CategoryConfig{"
+    return "Rule{"
         + "category='" + category + '\''
         + ", action=" + action
-        + ", days=" + days
+        + ", arg=" + arg
         + '}';
   }
 }

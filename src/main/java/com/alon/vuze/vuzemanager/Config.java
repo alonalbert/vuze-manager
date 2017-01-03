@@ -1,7 +1,7 @@
 package com.alon.vuze.vuzemanager;
 
 import com.alon.vuze.vuzemanager.Annotations.PluginDirectory;
-import com.alon.vuze.vuzemanager.categories.CategoryConfig;
+import com.alon.vuze.vuzemanager.categories.Rule;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,11 +20,11 @@ import java.util.stream.Collectors;
 @Singleton
 public class Config {
 
-  private static final String CATEGORIES = "categories";
+  private static final String RULES = "rules";
   private final String configFile;
   private final Logger logger;
 
-  private final Set<CategoryConfig> categories = new HashSet<>();
+  private final Set<Rule> categories = new HashSet<>();
 
   @Inject
   public Config(@PluginDirectory String path, Logger logger) {
@@ -33,7 +33,7 @@ public class Config {
     load();
   }
 
-  public Set<CategoryConfig> getCategories() {
+  public Set<Rule> getCategories() {
     return categories;
   }
 
@@ -75,8 +75,8 @@ public class Config {
   private void saveFile(File file) throws IOException {
     final JSONObject json = new JSONObject();
 
-    json.put(CATEGORIES, categories.stream()
-        .map(CategoryConfig::toJson)
+    json.put(RULES, categories.stream()
+        .map(Rule::toJson)
         .collect(Collectors.toCollection(JSONArray::new)));
 
     try (FileWriter out = new FileWriter(file)) {
@@ -90,9 +90,9 @@ public class Config {
     try (FileReader in = new FileReader(file)) {
       final JSONObject json = (JSONObject) parser.parse(in);
 
-      final JSONArray jsonCategories = (JSONArray) json.get(CATEGORIES);
+      final JSONArray jsonCategories = (JSONArray) json.get(RULES);
       categories.addAll(jsonCategories.stream()
-          .map(obj -> CategoryConfig.fromJson((JSONObject) obj))
+          .map(obj -> Rule.fromJson((JSONObject) obj))
           .collect(Collectors.toList()));
     }
   }
