@@ -2,29 +2,35 @@ package com.alon.vuze.vuzemanager;
 
 import com.alon.vuze.vuzemanager.Annotations.PluginDirectory;
 import com.alon.vuze.vuzemanager.categories.Rule;
+import com.alon.vuze.vuzemanager.categories.Rule.Action;
 import com.alon.vuze.vuzemanager.logger.Logger;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 @Singleton
 public class Config {
 
   private static final String RULES = "rules";
+  private static final String DIRECTORIES = "directories";
+  private static final String LAST_USED_ACTION = "lastUsedAction";
   private final String configFile;
   private final Logger logger;
 
-  private final Set<Rule> categories = new HashSet<>();
+  private final Set<Rule> rules = new HashSet<>();
+  private final ArrayList<String> directories = new ArrayList<>();
+  private Rule.Action lastUsedAction = Action.AUTO_DESTINATION;
 
   @Inject
   public Config(@PluginDirectory String path, Logger logger) {
@@ -33,8 +39,17 @@ public class Config {
     load();
   }
 
-  public Set<Rule> getCategories() {
-    return categories;
+  public Set<Rule> getRules() {
+    return rules;
+  }
+
+
+  public Action getLastUsedAction() {
+    return lastUsedAction;
+  }
+
+  public void setLastUsedAction(Action lastUsedAction) {
+    this.lastUsedAction = lastUsedAction;
   }
 
   public synchronized void save() {
@@ -49,6 +64,15 @@ public class Config {
     } catch(IOException e) {
       logger.log(e, "Failed to store options");
     }
+  }
+
+  public ArrayList<String> getDirectories() {
+    return directories;
+  }
+
+  public void addDirectory(String directory) {
+    directories.removeIf(Predicate.isEqual(directory));
+    directories.add(0, directory);
   }
 
   private synchronized void load() {
@@ -75,9 +99,15 @@ public class Config {
   private void saveFile(File file) throws IOException {
     final JSONObject json = new JSONObject();
 
-    json.put(RULES, categories.stream()
+    json.put(RULES, rules.stream()
         .map(Rule::toJson)
         .collect(Collectors.toCollection(JSONArray::new)));
+
+    final JSONArray jsonArray = new JSONArray();
+    jsonArray.addAll(directories);
+    json.put(DIRECTORIES, jsonArray);
+
+    json.put(LAST_USED_ACTION, lastUsedAction.toString());
 
     try (FileWriter out = new FileWriter(file)) {
       out.write(json.toString());
@@ -91,9 +121,17 @@ public class Config {
       final JSONObject json = (JSONObject) parser.parse(in);
 
       final JSONArray jsonCategories = (JSONArray) json.get(RULES);
-      categories.addAll(jsonCategories.stream()
+      rules.addAll(jsonCategories.stream()
           .map(obj -> Rule.fromJson((JSONObject) obj))
           .collect(Collectors.toList()));
+
+      final JSONArray jsonDirectories = (JSONArray) json.get(DIRECTORIES);
+      directories.addAll(jsonDirectories.stream()
+          .map(Object::toString)
+          .collect(Collectors.toList()));
+
+      lastUsedAction = Action.valueOf(
+          (String) json.getOrDefault(LAST_USED_ACTION, Action.AUTO_DESTINATION.name()));
     }
   }
 }

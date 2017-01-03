@@ -44,7 +44,7 @@ public class CategoryAutoDeleter {
   public void autoDeleteDownloads() {
     try {
       logger.log("Checking downloads...");
-      final List<Rule> categories = config.getCategories().stream()
+      final List<Rule> categories = config.getRules().stream()
           .filter(category -> category.getAction() == Rule.Action.CATEGORY_AUTO_DELETE)
           .collect(Collectors.toList());
 

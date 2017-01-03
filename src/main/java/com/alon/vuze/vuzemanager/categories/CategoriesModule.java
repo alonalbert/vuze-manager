@@ -19,9 +19,8 @@ public class CategoriesModule extends AbstractModule {
     this.torrentManager = torrentManager;
   }
 
-  public interface Factory {
+  interface Factory {
     RuleDialog create(Display display, OnOkListener onOkListener);
-    RuleDialog create(Display display, OnOkListener onOkListener, Rule rule);
  }
 
   @Override

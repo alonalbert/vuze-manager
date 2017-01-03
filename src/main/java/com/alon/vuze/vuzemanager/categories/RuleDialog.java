@@ -2,12 +2,15 @@ package com.alon.vuze.vuzemanager.categories;
 
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
 
+import com.alon.vuze.vuzemanager.Config;
 import com.alon.vuze.vuzemanager.categories.Rule.Action;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import java.util.ArrayList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -19,51 +22,44 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
-import org.eclipse.swt.widgets.Text;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 
 @SuppressWarnings({"BindingAnnotationWithoutInject", "WeakerAccess"})
 public class RuleDialog {
 
-  private final Messages messages;
-  private final TorrentAttribute categoryAttribute;
+  @Inject
+  private Config config;
+
+  @Inject
+  private Messages messages;
+
+  @Inject
+  @Named(TorrentAttribute.TA_CATEGORY)
+  TorrentAttribute categoryAttribute;
+
   private final Display display;
   private final Shell shell;
 
   private final OnOkListener onOkListener;
 
-  private final Combo wildcardCombo;
-  private final Label wildcardLabel;
-
-  private final Combo actionCombo;
-
-  private final Spinner daysSpinner;
-
-  private final Text directoryText;
-  private final Composite days;
-  private final Composite directory;
+  private Combo wildcardCombo;
+  private Label wildcardLabel;
+  private Combo actionCombo;
+  private Spinner daysSpinner;
+  private Combo directoryCombo;
+  private Composite days;
+  private Composite directory;
 
   @AssistedInject
   RuleDialog(
-      Messages messages,
-      @Named(TorrentAttribute.TA_CATEGORY) TorrentAttribute categoryAttribute,
       @Assisted Display display,
       @Assisted OnOkListener onOkListener) {
-    this(messages, categoryAttribute, display, onOkListener, null);
-  }
-
-  @AssistedInject
-  RuleDialog(
-      Messages messages,
-      @Named(TorrentAttribute.TA_CATEGORY) TorrentAttribute categoryAttribute,
-      @Assisted Display display,
-      @Assisted OnOkListener onOkListener,
-      @SuppressWarnings("SameParameterValue") @Assisted Rule rule) {
-    this.messages = messages;
-    this.categoryAttribute = categoryAttribute;
     this.display = display;
     this.onOkListener = onOkListener;
     shell = new Shell();
+  }
+
+  RuleDialog initializeAndOpen(Rule rule) {
     shell.setLayout(new GridLayout());
 
     messages.setLanguageText(shell, "vuzeManager.categories.add.popup.title");
@@ -116,15 +112,15 @@ public class RuleDialog {
     directory.setLayout(twoColumnLayout);
     directory.setLayoutData(twoSpanData);
 
-    Label directoryLabel = new Label(directory, SWT.NULL);
+    final Label directoryLabel = new Label(directory, SWT.NULL);
     messages.setLanguageText(directoryLabel, "vuzeManager.categories.add.popup.directory");
     directoryLabel.setLayoutData(labelLayout);
 
-    directoryText = new Text(directory, SWT.SINGLE | SWT.BORDER);
-    directoryText.setLayoutData(valueLayout);
+    directoryCombo = new Combo(directory, SWT.SINGLE | SWT.BORDER);
+    directoryCombo.setLayoutData(valueLayout);
 
     actionCombo.addModifyListener(e -> onActionChanged());
-    actionCombo.setText(actionCombo.getItem(0));
+    actionCombo.setText(actionCombo.getItem(config.getLastUsedAction().ordinal()));
 
     final Composite buttons = new Composite(shell, SWT.NULL);
     buttons.setLayout(twoColumnLayout);
@@ -147,9 +143,14 @@ public class RuleDialog {
       if (action == Action.CATEGORY_AUTO_DELETE || action == Action.WATCHED_AUTO_DELETE) {
         daysSpinner.setSelection(rule.getArgAsInt());
       } else if (action == Action.AUTO_DESTINATION) {
-        directoryText.setText(rule.getArg());
+        directoryCombo.setText(rule.getArg());
       }
     }
+    shell.pack();
+    final Point pt = display.getCursorLocation();
+    shell.setLocation(pt.x - 50, pt.y + 50);
+    shell.open();
+    return this;
   }
 
   private void onCancel() {
@@ -172,12 +173,14 @@ public class RuleDialog {
               String.valueOf(daysSpinner.getSelection()));
           break;
         case AUTO_DESTINATION:
-          rule = new Rule(wildcard, action, directoryText.getText());
+          final String direcotry = directoryCombo.getText();
+          rule = new Rule(wildcard, action, direcotry);
+          config.addDirectory(direcotry);
           break;
         default:
           throw new RuntimeException("Should never happen");
       }
-
+      config.setLastUsedAction(action);
       shell.dispose();
       if (onOkListener != null) {
         onOkListener.onOk(rule);
@@ -231,17 +234,13 @@ public class RuleDialog {
   private void setQualifierToTorrentName() {
     messages.setLanguageText(wildcardLabel, "vuzeManager.categories.add.popup.torrent");
     wildcardCombo.removeAll();
-  }
-
-  void open() {
-    shell.pack();
-    final Point pt = display.getCursorLocation();
-    shell.setLocation(pt.x - 50, pt.y + 50);
-    shell.open();
+    final ArrayList<String> directories = config.getDirectories();
+    for (String directory : directories) {
+      directoryCombo.add(directory);
+    }
   }
 
   interface OnOkListener {
-
     void onOk(Rule rule);
   }
 }

@@ -9,7 +9,7 @@ public class Rule {
   private static final String ACTION = "action";
   private static final String ARG = "arg";
 
-  enum Action {
+  public enum Action {
     FORCE_SEED("vuzeManager.categories.action.forceSeed"),
     CATEGORY_AUTO_DELETE("vuzeManager.categories.action.categoryAutoDelete"),
     WATCHED_AUTO_DELETE("vuzeManager.categories.action.watchedAutoDelete"),

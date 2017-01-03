@@ -161,7 +161,7 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     if (category == null) {
       return;
     }
-    final Set<Rule> rules = config.getCategories();
+    final Set<Rule> rules = config.getRules();
     rules.stream()
         .filter(rule -> rule.getAction() == FORCE_SEED && rule.getWildcard().matches(category))
         .forEach(rule -> forceStart(download));
@@ -178,9 +178,8 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
       final Rule rule = (Rule) items[0].getData();
       final RuleDialog ruleDialog = factory.create(
           getDisplay(),
-          newRule -> handleAddedOrEdited(rule, newRule),
-          rule);
-      ruleDialog.open();
+          newRule -> handleAddedOrEdited(rule, newRule));
+      ruleDialog.initializeAndOpen(rule);
     }
   }
 
@@ -188,11 +187,11 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     final RuleDialog ruleDialog = factory.create(
         getDisplay(),
         rule -> handleAddedOrEdited(null, rule));
-    ruleDialog.open();
+    ruleDialog.initializeAndOpen(null);
   }
 
   private void handleAddedOrEdited(Rule oldConfig, Rule newConfig) {
-    final Set<Rule> categories = config.getCategories();
+    final Set<Rule> categories = config.getRules();
     if (oldConfig != null) {
       categories.remove(oldConfig);
     }
@@ -205,7 +204,7 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     final TableItem[] items = table.getSelection();
     if(items.length == 1){
       final Rule rule = (Rule) items[0].getData();
-      config.getCategories().remove(rule);
+      config.getRules().remove(rule);
       config.save();
       final int oldSelectedIndex = table.getSelectionIndex();
       populateTable();
@@ -226,7 +225,7 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     try {
       if (table != null && !table.isDisposed()) {
         table.removeAll();
-        final List<Rule> sorted = new ArrayList<>(config.getCategories());
+        final List<Rule> sorted = new ArrayList<>(config.getRules());
         sorted.sort(Comparator
             .comparing(Rule::getAction)
             .thenComparing(Rule::getCategory));
