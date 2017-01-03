@@ -47,7 +47,5 @@ class VuzeManagerModule extends AbstractModule {
       bind(TorrentAttribute.class).annotatedWith(Names.named(torrentAttribute.getName()))
           .toInstance(torrentAttribute);
     }
-
   }
-
 }

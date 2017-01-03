@@ -7,6 +7,7 @@ import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -18,35 +19,41 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
-import org.eclipse.swt.widgets.Text;
+import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 
 @SuppressWarnings({"BindingAnnotationWithoutInject", "WeakerAccess"})
 public class CategoryDialog {
 
+  private final Messages messages;
+  private final TorrentAttribute categoryAttribute;
   private final Display display;
   private final Shell shell;
 
   private final OnOkListener onOkListener;
-  private final Text categoryEdit;
+  private final Combo categoryCombo;
   private final Combo actionCombo;
   private final Spinner daysSpinner;
   private Label daysLabel;
+  private Label categoryLabel;
 
   @AssistedInject
   CategoryDialog(
       Messages messages,
+      @Named(TorrentAttribute.TA_CATEGORY) TorrentAttribute categoryAttribute,
       @Assisted Display display,
       @Assisted OnOkListener onOkListener) {
-    this(messages, display, onOkListener, null);
+    this(messages, categoryAttribute, display, onOkListener, null);
   }
 
   @AssistedInject
   CategoryDialog(
       Messages messages,
+      @Named(TorrentAttribute.TA_CATEGORY) TorrentAttribute categoryAttribute,
       @Assisted Display display,
       @Assisted OnOkListener onOkListener,
-      @SuppressWarnings("SameParameterValue")
       @Assisted CategoryConfig categoryConfig) {
+    this.messages = messages;
+    this.categoryAttribute = categoryAttribute;
     this.display = display;
     this.onOkListener = onOkListener;
     shell = new Shell();
@@ -59,16 +66,16 @@ public class CategoryDialog {
     body.setLayout(new GridLayout(2, false));
     body.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-    final Label categoryLabel = new Label(body, SWT.NULL);
-    messages.setLanguageText(categoryLabel, "vuzeManager.categories.add.popup.category");
+    categoryLabel = new Label(body, SWT.NULL);
     final GridData labelLayout = new GridData();
     labelLayout.widthHint = 200;
     categoryLabel.setLayoutData(labelLayout);
 
-    categoryEdit = new Text(body, SWT.SINGLE | SWT.BORDER);
+    categoryCombo = new Combo(body, SWT.DROP_DOWN);
+
     final GridData valueLayout = new GridData(GridData.FILL_HORIZONTAL);
     valueLayout.widthHint = 250;
-    categoryEdit.setLayoutData(valueLayout);
+    categoryCombo.setLayoutData(valueLayout);
 
     final Label actionLabel = new Label(body, SWT.NULL);
     messages.setLanguageText(actionLabel, "vuzeManager.categories.add.popup.action");
@@ -106,7 +113,7 @@ public class CategoryDialog {
     ok.addListener(SWT.Selection, event -> onOk());
 
     if (categoryConfig != null) {
-      categoryEdit.setText(categoryConfig.getCategory());
+      categoryCombo.setText(categoryConfig.getCategory());
       actionCombo.setText(actionCombo.getItem(categoryConfig.getAction().ordinal()));
       daysSpinner.setSelection(categoryConfig.getDays());
     }
@@ -117,9 +124,9 @@ public class CategoryDialog {
   }
 
   private void onOk() {
-    final String category = categoryEdit.getText();
+    final String category = categoryCombo.getText();
     if (!category.isEmpty()) {
-      final Action action = Action.values()[actionCombo.getSelectionIndex()];
+      final Action action = getAction();
       final CategoryConfig categoryConfig = new CategoryConfig(category, action,
           daysSpinner.getSelection());
       shell.dispose();
@@ -129,18 +136,42 @@ public class CategoryDialog {
     }
   }
 
+  private Action getAction() {
+    return Action.values()[actionCombo.getSelectionIndex()];
+  }
+
   private void onActionChanged() {
-    final Action action = Action.values()[actionCombo.getSelectionIndex()];
+    final Action action = getAction();
     switch (action) {
       case FORCE_SEED:
+        populateCategories();
         daysSpinner.setVisible(false);
         daysLabel.setVisible(false);
         break;
-      case AUTO_DELETE:
+      case CATEGORY_AUTO_DELETE:
+        populateCategories();
+        daysSpinner.setVisible(true);
+        daysLabel.setVisible(true);
+        break;
+      case WATCHED_AUTO_DELETE:
+        populateSections();
         daysSpinner.setVisible(true);
         daysLabel.setVisible(true);
         break;
     }
+  }
+
+  private void populateCategories() {
+    messages.setLanguageText(categoryLabel, "vuzeManager.categories.add.popup.category");
+    categoryCombo.removeAll();
+    for (String category : categoryAttribute.getDefinedValues()) {
+      categoryCombo.add(category);
+    }
+  }
+
+  private void populateSections() {
+    messages.setLanguageText(categoryLabel, "vuzeManager.categories.add.popup.section");
+    categoryCombo.removeAll();
   }
 
   void open() {

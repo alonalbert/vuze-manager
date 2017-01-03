@@ -2,6 +2,7 @@ package com.alon.vuze.vuzemanager.categories;
 
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
+import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
 
 import com.alon.vuze.vuzemanager.Config;
 import com.alon.vuze.vuzemanager.categories.CategoryConfig.Action;
@@ -10,9 +11,9 @@ import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.utils.Wildcard;
 import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
 import com.google.inject.name.Named;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.eclipse.swt.SWT;
@@ -35,11 +36,23 @@ import org.gudy.azureus2.plugins.download.DownloadCompletionListener;
 import org.gudy.azureus2.plugins.download.DownloadEventNotifier;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
+import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
+import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
 @SuppressWarnings("WeakerAccess")
-public class CategoriesView extends Composite implements DownloadCompletionListener {
-  private final Config config;
-  private final Logger logger;
+public class CategoriesView implements UISWTViewEventListener, DownloadCompletionListener {
+
+  @Inject
+  private Config config;
+
+  @Inject
+  private Logger logger;
+
+  @Inject
+  private Messages messages;
+
+  @Inject
+  DownloadManager downloadManager;
 
   @SuppressWarnings("WeakerAccess")
   @Inject
@@ -54,38 +67,44 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
   @Inject
   CategoriesModule.Factory factory;
 
-  private final Table table;
-  private final ToolItem remove;
+  private Table table;
+  private ToolItem remove;
 
   @Inject
-  public CategoriesView(
-      @SuppressWarnings("BindingAnnotationWithoutInject")
-      @Assisted Composite parent,
-      DownloadManager downloadManager,
-      Config config,
-      Logger logger,
-      Messages messages) {
-    super(parent, SWT.BORDER);
-    this.config = config;
-    this.logger = logger;
+  public CategoriesView() {
+  }
 
+  @Override
+  public boolean eventOccurred(UISWTViewEvent event) {
+    switch (event.getType()) {
+      case UISWTViewEvent.TYPE_INITIALIZE:
+        initialize((Composite) event.getData());
+        break;
 
+      case UISWTViewEvent.TYPE_DESTROY:
+        delete();
+        break;
+    }
+    return true;
+  }
+
+  private void initialize(Composite root) {
     final Display display = getDisplay();
 
-    setLayout(new GridLayout());
-    setLayoutData(new GridData(GridData.FILL_BOTH));
+    root.setLayout(new GridLayout());
+    root.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-    final Label label = new Label(this, SWT.NULL);
+    final Label label = new Label(root, SWT.NULL);
     messages.setLanguageText(label, "vuzeManager.categories.label");
 
-    final ToolBar toolBar = new ToolBar(this, SWT.BORDER | SWT.FLAT);
+    final ToolBar toolBar = new ToolBar(root, SWT.BORDER | SWT.FLAT);
 
     final ToolItem add = new ToolItem(toolBar, SWT.PUSH);
     add.setImage(ImageRepository.getImage(display, ADD));
     messages.setLanguageTooltip(add, "vuzeManager.categories.add");
     add.addListener(SWT.Selection, e -> handleAddItem());
 
-    table = new Table(this,
+    table = new Table(root,
         SWT.SINGLE | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
 
     remove = new ToolItem(toolBar, SWT.PUSH);
@@ -128,6 +147,10 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
 
     final DownloadEventNotifier eventNotifier = downloadManager.getGlobalDownloadEventNotifier();
     eventNotifier.addCompletionListener(this);
+  }
+
+  private void delete() {
+    ImageRepository.unLoadImages();
   }
 
   @Override
@@ -206,7 +229,9 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
       if (table != null && !table.isDisposed()) {
         table.removeAll();
         final List<CategoryConfig> sorted = new ArrayList<>(config.getCategories());
-        sorted.sort(CategoryConfig::compareTo);
+        sorted.sort(Comparator
+            .comparing(CategoryConfig::getAction)
+            .thenComparing(CategoryConfig::getCategory));
         sorted.forEach(this::addCategoryToTable);
       }
     } catch (Exception e) {
@@ -220,8 +245,9 @@ public class CategoriesView extends Composite implements DownloadCompletionListe
     item.setText(0, categoryConfig.getCategory());
     final Action action = categoryConfig.getAction();
     item.setText(1, MessageText.getString(action.getMessageKey()));
-    if (action == Action.AUTO_DELETE) {
+    if (action == Action.CATEGORY_AUTO_DELETE) {
       item.setText(2, String.valueOf(categoryConfig.getDays()));
     }
   }
+
 }

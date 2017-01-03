@@ -3,7 +3,7 @@ package com.alon.vuze.vuzemanager.categories;
 import com.alon.vuze.vuzemanager.utils.Wildcard;
 import org.json.simple.JSONObject;
 
-public class CategoryConfig implements Comparable<CategoryConfig> {
+public class CategoryConfig {
 
   private static final String CATEGORY = "category";
   private static final String ACTION = "action";
@@ -11,7 +11,8 @@ public class CategoryConfig implements Comparable<CategoryConfig> {
 
   public enum Action {
     FORCE_SEED("vuzeManager.categories.action.forceSeed"),
-    AUTO_DELETE("vuzeManager.categories.action.autoDelete"),;
+    CATEGORY_AUTO_DELETE("vuzeManager.categories.action.categoryAutoDelete"),
+    WATCHED_AUTO_DELETE("vuzeManager.categories.action.watchedAutoDelete");
 
     private final String messageKey;
 
@@ -81,18 +82,6 @@ public class CategoryConfig implements Comparable<CategoryConfig> {
       return false;
     }
     return action == that.action;
-  }
-
-  @Override
-  public int compareTo(CategoryConfig o) {
-    return category.compareTo(o.category);
-  }
-
-  @Override
-  public int hashCode() {
-    int result = category.hashCode();
-    result = 31 * result + action.hashCode();
-    return result;
   }
 
   @Override

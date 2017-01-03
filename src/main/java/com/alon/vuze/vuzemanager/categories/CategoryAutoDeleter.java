@@ -45,7 +45,7 @@ public class CategoryAutoDeleter {
     try {
       logger.log("Checking downloads...");
       final List<CategoryConfig> categories = config.getCategories().stream()
-          .filter(category -> category.getAction() == CategoryConfig.Action.AUTO_DELETE)
+          .filter(category -> category.getAction() == CategoryConfig.Action.CATEGORY_AUTO_DELETE)
           .collect(Collectors.toList());
 
       logger.log("Found %d relevant categories", categories.size());
