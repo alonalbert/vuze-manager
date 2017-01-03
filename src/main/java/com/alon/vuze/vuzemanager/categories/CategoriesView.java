@@ -17,6 +17,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
@@ -30,6 +32,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.Widget;
 import org.gudy.azureus2.core3.internat.MessageText;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadCompletionListener;
@@ -123,14 +126,30 @@ public class CategoriesView implements UISWTViewEventListener, DownloadCompletio
     final TableColumn name = new TableColumn(table, SWT.NULL);
     messages.setLanguageText(name, "vuzeManager.categories.column.name");
     name.setWidth(200);
+    name.setData(Config.COLUMN_NAME);
 
     final TableColumn action = new TableColumn(table, SWT.NULL);
     messages.setLanguageText(action, "vuzeManager.categories.column.action");
     action.setWidth(250);
+    action.setData(Config.COLUMN_ACTION);
 
-    final TableColumn days = new TableColumn(table, SWT.NULL);
-    messages.setLanguageText(days, "vuzeManager.categories.column.arg");
-    days.setWidth(600);
+    final TableColumn arg = new TableColumn(table, SWT.NULL);
+    messages.setLanguageText(arg, "vuzeManager.categories.column.arg");
+    arg.setWidth(600);
+    arg.setData(Config.COLUMN_ARG);
+
+    arg.addControlListener(new ControlListener() {
+      @Override
+      public void controlMoved(ControlEvent e) {
+
+      }
+
+      @Override
+      public void controlResized(ControlEvent e) {
+        final Widget source = (Widget) e.getSource();
+        System.out.println("Width: " + arg.getWidth());
+      }
+    });
 
     //listener to deselect if outside an item
     table.addMouseListener(new MouseAdapter() {

@@ -25,6 +25,9 @@ public class Config {
   private static final String RULES = "rules";
   private static final String DIRECTORIES = "directories";
   private static final String LAST_USED_ACTION = "lastUsedAction";
+  public static final String COLUMN_NAME = "columnName";
+  public static final String COLUMN_ACTION = "columnAction";
+  public static final String COLUMN_ARG = "columnArg";
   private final String configFile;
   private final Logger logger;
 
