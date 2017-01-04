@@ -14,7 +14,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -25,6 +27,7 @@ public class Config {
   private static final String RULES = "rules";
   private static final String DIRECTORIES = "directories";
   private static final String LAST_USED_ACTION = "lastUsedAction";
+  static final String RULE_TABLE_COLUMN_WIDTHS = "ruleTableColumnWidths";
   static final String COLUMN_NAME = "columnName";
   static final String COLUMN_ACTION = "columnAction";
   static final String COLUMN_ARG = "columnArg";
@@ -33,7 +36,9 @@ public class Config {
 
   private final Set<Rule> rules = new HashSet<>();
   private final ArrayList<String> directories = new ArrayList<>();
-  private Rule.Action lastUsedAction = Action.AUTO_DESTINATION;
+  private Action lastUsedAction = Action.AUTO_DESTINATION;
+  private Map<String, Integer> ruleTableColumnWidths = new HashMap<>();
+
 
   @Inject
   public Config(@PluginDirectory String path, Logger logger) {
@@ -76,6 +81,15 @@ public class Config {
   void addDirectory(String directory) {
     directories.removeIf(Predicate.isEqual(directory));
     directories.add(0, directory);
+  }
+
+  void setRuleTableColumnWidth(String name, int width) {
+    ruleTableColumnWidths.put(name, width);
+  }
+
+  int getRuleTableColumnWidth(String name) {
+    final Integer width = ruleTableColumnWidths.get(name);
+    return width != null ? width :-1;
   }
 
   private synchronized void load() {

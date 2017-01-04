@@ -21,7 +21,6 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
-import org.eclipse.swt.widgets.Widget;
 import org.gudy.azureus2.core3.internat.MessageText;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadCompletionListener;
@@ -43,15 +42,19 @@ import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
 @SuppressWarnings("WeakerAccess")
 public class RulesView implements UISWTViewEventListener, DownloadCompletionListener {
 
+  @SuppressWarnings("unused")
   @Inject
   private Config config;
 
+  @SuppressWarnings("unused")
   @Inject
   private Logger logger;
 
+  @SuppressWarnings("unused")
   @Inject
   private Messages messages;
 
+  @SuppressWarnings("unused")
   @Inject
   private ImageRepository imageRepository;
 
@@ -120,23 +123,7 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
     table.setLayoutData(new GridData(GridData.FILL_BOTH));
     table.setHeaderVisible(true);
 
-    // TODO: 12/31/16 Persist column widths in config
-    final TableColumn name = new TableColumn(table, SWT.NULL);
-    messages.setLanguageText(name, "vuzeManager.rules.column.name");
-    name.setWidth(200);
-    name.setData(Config.COLUMN_NAME);
-
-    final TableColumn action = new TableColumn(table, SWT.NULL);
-    messages.setLanguageText(action, "vuzeManager.rules.column.action");
-    action.setWidth(250);
-    action.setData(Config.COLUMN_ACTION);
-
-    final TableColumn arg = new TableColumn(table, SWT.NULL);
-    messages.setLanguageText(arg, "vuzeManager.rules.column.arg");
-    arg.setWidth(600);
-    arg.setData(Config.COLUMN_ARG);
-
-    arg.addControlListener(new ControlListener() {
+    final ControlListener columnResizeListener = new ControlListener() {
       @Override
       public void controlMoved(ControlEvent e) {
 
@@ -144,10 +131,28 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
 
       @Override
       public void controlResized(ControlEvent e) {
-        final Widget source = (Widget) e.getSource();
-        System.out.println("Width: " + arg.getWidth());
+        final TableColumn source = (TableColumn) e.getSource();
+        System.out.printf("Width of %s is %d\n", source.getData(), source.getWidth());
       }
-    });
+    };
+
+    final TableColumn name = new TableColumn(table, SWT.NULL);
+    messages.setLanguageText(name, "vuzeManager.rules.column.name");
+    name.setWidth(200);
+    name.setData(Config.COLUMN_NAME);
+    name.addControlListener(columnResizeListener);
+
+    final TableColumn action = new TableColumn(table, SWT.NULL);
+    messages.setLanguageText(action, "vuzeManager.rules.column.action");
+    action.setWidth(250);
+    action.setData(Config.COLUMN_ACTION);
+    action.addControlListener(columnResizeListener);
+
+    final TableColumn arg = new TableColumn(table, SWT.NULL);
+    messages.setLanguageText(arg, "vuzeManager.rules.column.arg");
+    arg.setWidth(600);
+    arg.setData(Config.COLUMN_ARG);
+    arg.addControlListener(columnResizeListener);
 
     //listener to deselect if outside an item
     table.addMouseListener(new MouseAdapter() {
