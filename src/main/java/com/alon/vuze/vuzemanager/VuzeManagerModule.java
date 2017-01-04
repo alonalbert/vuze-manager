@@ -1,6 +1,7 @@
 package com.alon.vuze.vuzemanager;
 
 import com.alon.vuze.vuzemanager.Annotations.PluginDirectory;
+import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.logger.VuzeLogger;
 import com.alon.vuze.vuzemanager.plex.PlexClient;

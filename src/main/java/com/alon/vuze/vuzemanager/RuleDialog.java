@@ -1,5 +1,6 @@
 package com.alon.vuze.vuzemanager;
 
+import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -18,14 +19,22 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.function.Predicate;
 
 @SuppressWarnings({"BindingAnnotationWithoutInject", "WeakerAccess"})
 public class RuleDialog {
 
+  public static final String LAST_USED_ACTION = "ruleDialog.lastUsedAction";
+  public static final String DIRECTORY_HISTORY = "ruleDialog.directoryHistory";
+  public static final String RULE_DIALOG_LOCATION = "ruleDialog.location";
+  private static final String RULE_DIALOG_SIZE = "ruleDialog.ruleDialogSize";
+
+  @SuppressWarnings("unused")
   @Inject
   private Config config;
 
+  @SuppressWarnings("unused")
   @Inject
   private Messages messages;
 
@@ -46,6 +55,8 @@ public class RuleDialog {
   private Composite days;
   private Composite directory;
 
+  private LinkedList<String> directoryHistory = new LinkedList<>();
+
   @AssistedInject
   RuleDialog(
       @Assisted Display display,
@@ -56,8 +67,9 @@ public class RuleDialog {
   }
 
   void initializeAndOpen(Rule rule) {
-    shell.setLayout(new GridLayout());
+    directoryHistory = config.get(DIRECTORY_HISTORY, new LinkedList<>());
 
+    shell.setLayout(new GridLayout());
     messages.setLanguageText(shell, "vuzeManager.rules.add.popup.title");
 
     final GridLayout twoColumnLayout = new GridLayout(2, false);
@@ -115,7 +127,7 @@ public class RuleDialog {
     directoryCombo.setLayoutData(valueLayout);
 
     actionCombo.addModifyListener(e -> onActionChanged());
-    actionCombo.setText(actionCombo.getItem(config.getLastUsedAction().ordinal()));
+    actionCombo.setText(actionCombo.getItem(config.get(LAST_USED_ACTION, Rule.Action.AUTO_DESTINATION).ordinal()));
 
     final Composite buttons = new Composite(shell, SWT.NULL);
     buttons.setLayout(twoColumnLayout);
@@ -142,13 +154,26 @@ public class RuleDialog {
       }
     }
     shell.pack();
-    final Point pt = display.getCursorLocation();
-    shell.setLocation(pt.x - 50, pt.y + 50);
+    final Point configLocation = config.get(RULE_DIALOG_LOCATION, Point.class);
+    final Point location = configLocation != null ? configLocation : display.getCursorLocation();
+
+    final Point configSize = config.get(RULE_DIALOG_SIZE, Point.class);
+    if (configSize != null) {
+      shell.setSize(configSize.x, configSize.y);
+    }
+    shell.setLocation(location.x - 50, location.y + 50);
     shell.open();
   }
 
   private void onCancel() {
+    saveConfig();
     shell.dispose();
+  }
+
+  private void saveConfig() {
+    config.set(RULE_DIALOG_LOCATION, shell.getLocation());
+    config.set(RULE_DIALOG_SIZE, shell.getSize());
+    config.save();
   }
 
   private void onOk() {
@@ -169,17 +194,25 @@ public class RuleDialog {
         case AUTO_DESTINATION:
           final String directory = directoryCombo.getText();
           rule = new Rule(wildcard, action, directory);
-          config.addDirectory(directory);
+          addDirectoryHistory(directory);
           break;
         default:
           throw new RuntimeException("Should never happen");
       }
-      config.setLastUsedAction(action);
+      config.set(LAST_USED_ACTION, action);
       shell.dispose();
       if (onOkListener != null) {
         onOkListener.onOk(rule);
       }
     }
+    saveConfig();
+  }
+
+  private void addDirectoryHistory(String directory) {
+    directoryHistory.removeIf(Predicate.isEqual(directory));
+    directoryHistory.addFirst(directory);
+    config.set(DIRECTORY_HISTORY, directoryHistory);
+    config.save();
   }
 
   private Rule.Action getAction() {
@@ -228,8 +261,7 @@ public class RuleDialog {
   private void setQualifierToTorrentName() {
     messages.setLanguageText(wildcardLabel, "vuzeManager.rules.add.popup.torrent");
     wildcardCombo.removeAll();
-    final ArrayList<String> directories = config.getDirectories();
-    for (String directory : directories) {
+    for (String directory : directoryHistory) {
       directoryCombo.add(directory);
     }
   }

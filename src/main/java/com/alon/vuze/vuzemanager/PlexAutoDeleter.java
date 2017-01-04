@@ -1,5 +1,6 @@
 package com.alon.vuze.vuzemanager;
 
+import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.plex.Directory;
 import com.alon.vuze.vuzemanager.plex.PlexClient;
@@ -23,18 +24,23 @@ import java.util.stream.Collectors;
 
 class PlexAutoDeleter {
   private static final int LOG_DAYS = 30;
+  @SuppressWarnings("unused")
   @Inject
   private PlexClient plexClient;
 
+  @SuppressWarnings("unused")
   @Inject
   private Logger logger;
 
+  @SuppressWarnings("unused")
   @Inject
   private Config config;
 
+  @SuppressWarnings("unused")
   @Inject
   private DownloadManager downloadManager;
 
+  @SuppressWarnings("unused")
   @Inject
   public PlexAutoDeleter() {
   }
@@ -46,7 +52,7 @@ class PlexAutoDeleter {
       final Collection<Directory> sections = plexClient.getShowSections();
       logger.log("Found " + sections.size() + " sections");
 
-      final List<Rule> rules = config.getRules().stream()
+      final List<Rule> rules = RulesView.getRulesFromConfig(config).stream()
           .filter(category -> category.getAction() == Rule.Action.WATCHED_AUTO_DELETE)
           .collect(Collectors.toList());
 
@@ -112,7 +118,7 @@ class PlexAutoDeleter {
       checkOrphans(filesToDelete, vuzeRoot);
       logger.log("Done!!!");
     } catch (Throwable e) {
-      logger.log("Error", e);
+      logger.log(e, "Error");
     } finally {
       logger.setStatus("Idle");
     }
@@ -185,7 +191,7 @@ class PlexAutoDeleter {
         final File file = new File(vuzeRoot + filename);
         logger.log("    Deleting " + file);
         if (false) { // todo
-          boolean deleted = file.delete();
+          final boolean deleted = file.delete();
           logger.log("    Deleted: " + deleted);
         }
       }

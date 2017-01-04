@@ -1,8 +1,5 @@
 package com.alon.vuze.vuzemanager.resources;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Button;
@@ -22,6 +19,11 @@ import org.gudy.azureus2.core3.util.Debug;
 import org.gudy.azureus2.ui.swt.KeyBindings;
 import org.gudy.azureus2.ui.swt.components.DoubleBufferedLabel;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class DebugMessages implements Messages {
   private final Properties properties = new Properties();
   public DebugMessages() throws IOException {

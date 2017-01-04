@@ -7,22 +7,25 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.inject.Inject;
 
+@Singleton
 public class Config {
   private final String configFile;
   private final Logger logger;
 
   private final GsonBuilder gsonBuilder = new GsonBuilder()
-      .setPrettyPrinting()
-      .excludeFieldsWithoutExposeAnnotation();
+      .setPrettyPrinting();
 
   private final Gson gson =gsonBuilder.create();
 
@@ -54,7 +57,15 @@ public class Config {
     return gson.fromJson(element, cls);
   }
 
-  synchronized void save() {
+  public <T> T getTyped(String key, Type type, T defaultValue) {
+    final JsonElement element = map.get(key);
+    if (element == null) {
+      return defaultValue;
+    }
+    return gson.fromJson(element, type);
+  }
+
+  public synchronized void save() {
     final File file = new File(configFile);
     logger.log("storing options to file: %s", file.getPath());
     try {

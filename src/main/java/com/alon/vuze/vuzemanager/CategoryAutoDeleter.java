@@ -1,5 +1,6 @@
 package com.alon.vuze.vuzemanager;
 
+import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.utils.TimeUtils;
 import com.google.inject.Inject;
@@ -15,19 +16,24 @@ import java.util.stream.Collectors;
 
 class CategoryAutoDeleter {
 
+  @SuppressWarnings("unused")
   @Inject
   private DownloadManager downloadManager;
 
+  @SuppressWarnings("unused")
   @Inject
   private Logger logger;
 
+  @SuppressWarnings("unused")
   @Inject
   private Config config;
 
+  @SuppressWarnings("unused")
   @Inject
   @Named(TorrentAttribute.TA_CATEGORY)
   private TorrentAttribute categoryAttribute;
 
+  @SuppressWarnings("unused")
   @Inject
   @Named(VuzeManagerModule.TA_COMPLETED_TIME)
   private TorrentAttribute completedTimeAttribute;
@@ -39,15 +45,15 @@ class CategoryAutoDeleter {
   void autoDeleteDownloads() {
     try {
       logger.log("Checking downloads...");
-      final List<Rule> categories = config.getRules().stream()
+      final List<Rule> rules = RulesView.getRulesFromConfig(config).stream()
           .filter(category -> category.getAction() == Rule.Action.CATEGORY_AUTO_DELETE)
           .collect(Collectors.toList());
 
-      logger.log("Found %d relevant categories", categories.size());
-      if (categories.size() > 0) {
+      logger.log("Found %d relevant rules", rules.size());
+      if (rules.size() > 0) {
         Arrays.stream(downloadManager.getDownloads())
             .filter(Download::isComplete)
-            .forEach(download -> checkDownload(download, categories, System.currentTimeMillis()));
+            .forEach(download -> checkDownload(download, rules, System.currentTimeMillis()));
       }
       logger.log("Done!!!");
     } catch (Exception e) {

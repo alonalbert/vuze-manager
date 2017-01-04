@@ -4,19 +4,18 @@ import com.alon.vuze.vuzemanager.Rule;
 import com.alon.vuze.vuzemanager.Rule.Action;
 import com.alon.vuze.vuzemanager.logger.DebugLogger;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.truth.Truth;
-import java.util.List;
-import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * todo
  */
 public class ConfigTest {
 
-  public static final String KEY = "key";
+  private static final String KEY = "key";
   private static final String NOKEY = "nokey";
   private Config config;
 
@@ -65,19 +64,4 @@ public class ConfigTest {
     Truth.assertThat(config.get(NOKEY, value.getClass())).isEqualTo(null);
     Truth.assertThat(config.get(NOKEY, defaultValue)).isEqualTo(defaultValue);
   }
-
-  @Test
-  public void testMapOfInts() throws Exception {
-    final Map<String, Integer> value = Maps.newHashMap();
-    value.put("A", 1);
-    value.put("B", 2);
-    final Map<String, Integer> defaultValue = Maps.newHashMap();
-    config.set(KEY, value);
-    Truth.assertThat(config.get(KEY, value.getClass())).isEqualTo(value);
-    Truth.assertThat(config.get(KEY, defaultValue)).isEqualTo(value);
-    Truth.assertThat(config.get(NOKEY, value.getClass())).isEqualTo(null);
-    Truth.assertThat(config.get(NOKEY, defaultValue)).isEqualTo(defaultValue);
-  }
-
-
 }

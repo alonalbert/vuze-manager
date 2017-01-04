@@ -1,24 +1,15 @@
 package com.alon.vuze.vuzemanager;
 
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
-import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
-
+import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
+import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -38,8 +29,25 @@ import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
+import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
+
 @SuppressWarnings("WeakerAccess")
 public class RulesView implements UISWTViewEventListener, DownloadCompletionListener {
+
+  public static final String RULES = "rulesView.rules";
+  public static final String QUALIFIER_WIDTH = "rulesView.qualifierWidth";
+  public static final String ACTION_WIDTH = "rulesView.actionWidth";
+  public static final String ARG_WIDTH = "rulesView.argWidth";
+  public static final Type RULES_TYPE = new TypeToken<HashSet<Rule>>() {}.getType();
 
   @SuppressWarnings("unused")
   @Inject
@@ -75,6 +83,11 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
 
   private Table table;
   private ToolItem remove;
+  private TableColumn qualifier;
+  private TableColumn action;
+  private TableColumn arg;
+
+  Set<Rule> rules;
 
   @Inject
   public RulesView() {
@@ -95,6 +108,8 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
   }
 
   private void initialize(Composite root) {
+
+    rules = getRulesFromConfig(config);
     final Display display = getDisplay();
 
     root.setLayout(new GridLayout());
@@ -135,35 +150,25 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
       }
     };
 
-    final TableColumn name = new TableColumn(table, SWT.NULL);
-    messages.setLanguageText(name, "vuzeManager.rules.column.name");
-    name.setWidth(200);
-    name.setData(Config.COLUMN_NAME);
-    name.addControlListener(columnResizeListener);
+    qualifier = new TableColumn(table, SWT.NULL);
+    messages.setLanguageText(qualifier, "vuzeManager.rules.column.name");
+    qualifier.setWidth(200);
+    qualifier.addControlListener(columnResizeListener);
+    setColumnWidth(qualifier, QUALIFIER_WIDTH);
 
-    final TableColumn action = new TableColumn(table, SWT.NULL);
+    action = new TableColumn(table, SWT.NULL);
     messages.setLanguageText(action, "vuzeManager.rules.column.action");
     action.setWidth(250);
-    action.setData(Config.COLUMN_ACTION);
     action.addControlListener(columnResizeListener);
+    setColumnWidth(action, ACTION_WIDTH);
 
-    final TableColumn arg = new TableColumn(table, SWT.NULL);
+    arg = new TableColumn(table, SWT.NULL);
     messages.setLanguageText(arg, "vuzeManager.rules.column.arg");
     arg.setWidth(600);
-    arg.setData(Config.COLUMN_ARG);
     arg.addControlListener(columnResizeListener);
+    setColumnWidth(arg, ARG_WIDTH);
 
     //listener to deselect if outside an item
-    table.addMouseListener(new MouseAdapter() {
-      public void mouseDown(MouseEvent event) {
-        if (event.button == 1) {
-          if (table.getItem(new Point(event.x, event.y)) == null) {
-            table.deselectAll();
-            remove.setEnabled(false);
-          }
-        }
-      }
-    });
     table.addListener(SWT.Selection, event -> remove.setEnabled(table.getSelection().length >= 1));
     table.addListener (SWT.MouseDoubleClick, event -> handleItemDoubleClick());
 
@@ -173,8 +178,23 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
     eventNotifier.addCompletionListener(this);
   }
 
+  public static HashSet<Rule> getRulesFromConfig(Config config) {
+    return config.getTyped(RULES, RULES_TYPE, new HashSet<>());
+  }
+
+  private void setColumnWidth(TableColumn column, String name) {
+    final int width = config.get(name, -1);
+    if (width != -1) {
+      column.setWidth(width);
+    }
+  }
+
   private void delete() {
     imageRepository.unLoadImages();
+    config.set(QUALIFIER_WIDTH, qualifier.getWidth());
+    config.set(ACTION_WIDTH, action.getWidth());
+    config.set(ARG_WIDTH, arg.getWidth());
+    config.save();
   }
 
   @Override
@@ -185,7 +205,6 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
     if (category == null) {
       return;
     }
-    final Set<Rule> rules = config.getRules();
     rules.stream()
         .filter(rule -> rule.getAction() == Rule.Action.FORCE_SEED && rule.getMatcher().matches(category))
         .forEach(rule -> forceStart(download));
@@ -215,11 +234,11 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
   }
 
   private void handleAddedOrEdited(Rule oldConfig, Rule newConfig) {
-    final Set<Rule> categories = config.getRules();
     if (oldConfig != null) {
-      categories.remove(oldConfig);
+      rules.remove(oldConfig);
     }
-    categories.add(newConfig);
+    rules.add(newConfig);
+    config.set(RULES, rules);
     config.save();
     populateTable();
   }
@@ -228,7 +247,8 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
     final TableItem[] items = table.getSelection();
     if(items.length == 1){
       final Rule rule = (Rule) items[0].getData();
-      config.getRules().remove(rule);
+      rules.remove(rule);
+      config.set(RULES, rules);
       config.save();
       final int oldSelectedIndex = table.getSelectionIndex();
       populateTable();
@@ -249,7 +269,7 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
     try {
       if (table != null && !table.isDisposed()) {
         table.removeAll();
-        final List<Rule> sorted = new ArrayList<>(config.getRules());
+        final List<Rule> sorted = new ArrayList<>(rules);
         sorted.sort(Comparator
             .comparing(Rule::getAction)
             .thenComparing(Rule::getCategory));

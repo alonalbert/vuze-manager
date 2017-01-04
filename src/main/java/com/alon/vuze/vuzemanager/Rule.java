@@ -1,8 +1,6 @@
 package com.alon.vuze.vuzemanager;
 
 import com.alon.vuze.vuzemanager.utils.WildcardMatcher;
-import com.google.gson.annotations.Expose;
-import org.json.simple.JSONObject;
 
 public class Rule {
 
@@ -27,12 +25,9 @@ public class Rule {
     }
   }
 
-  @Expose
   private final String qualifier;
   private final WildcardMatcher matcher;
-  @Expose
   private final Action action;
-  @Expose
   private final String arg;
 
   public Rule(String qualifier, Action action, String arg) {
@@ -60,21 +55,6 @@ public class Rule {
 
   int getArgAsInt() {
     return Integer.parseInt(arg);
-  }
-
-  JSONObject toJson() {
-    final JSONObject json= new JSONObject();
-    json.put(CATEGORY, qualifier);
-    json.put(ACTION, action.toString());
-    json.put(ARG, arg);
-    return json;
-  }
-
-  static Rule fromJson(JSONObject json) {
-    return new Rule(
-        (String) json.get(CATEGORY),
-        Action.valueOf((String) json.get(ACTION)),
-        (String) json.get(ARG));
   }
 
   @Override
