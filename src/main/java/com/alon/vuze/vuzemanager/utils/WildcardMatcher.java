@@ -2,12 +2,12 @@ package com.alon.vuze.vuzemanager.utils;
 
 import java.util.regex.Pattern;
 
-public class Wildcard {
+public class WildcardMatcher {
 
   private final Pattern pattern;
 
   @SuppressWarnings("ReplaceAllDot")
-  public Wildcard(String wildcard) {
+  public WildcardMatcher(String wildcard) {
     final String regex = wildcard
         .replaceAll(".", "[$0]")
         .replace("[*]", ".*")

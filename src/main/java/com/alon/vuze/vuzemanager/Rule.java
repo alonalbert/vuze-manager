@@ -1,6 +1,7 @@
 package com.alon.vuze.vuzemanager;
 
-import com.alon.vuze.vuzemanager.utils.Wildcard;
+import com.alon.vuze.vuzemanager.utils.WildcardMatcher;
+import com.google.gson.annotations.Expose;
 import org.json.simple.JSONObject;
 
 public class Rule {
@@ -26,24 +27,27 @@ public class Rule {
     }
   }
 
-  private final String category;
-  private final Wildcard wildcard;
+  @Expose
+  private final String qualifier;
+  private final WildcardMatcher matcher;
+  @Expose
   private final Action action;
+  @Expose
   private final String arg;
 
-  Rule(String category, Action action, String arg) {
-    this.category = category;
+  public Rule(String category, Action action, String arg) {
+    this.qualifier = category;
     this.action = action;
     this.arg = arg;
-    wildcard = new Wildcard(category);
+    matcher = new WildcardMatcher(category);
   }
 
   String getCategory() {
-    return category;
+    return qualifier;
   }
 
-  Wildcard getWildcard() {
-    return wildcard;
+  WildcardMatcher getMatcher() {
+    return matcher;
   }
 
   Action getAction() {
@@ -60,7 +64,7 @@ public class Rule {
 
   JSONObject toJson() {
     final JSONObject json= new JSONObject();
-    json.put(CATEGORY, category);
+    json.put(CATEGORY, qualifier);
     json.put(ACTION, action.toString());
     json.put(ARG, arg);
     return json;
@@ -83,7 +87,7 @@ public class Rule {
     }
     final Rule that = (Rule) o;
     //noinspection SimplifiableIfStatement
-    if (!category.equals(that.category)) {
+    if (!qualifier.equals(that.qualifier)) {
       return false;
     }
     return action == that.action;
@@ -92,7 +96,7 @@ public class Rule {
   @Override
   public String toString() {
     return "Rule{"
-        + "category='" + category + '\''
+        + "category='" + qualifier + '\''
         + ", action=" + action
         + ", arg=" + arg
         + '}';

@@ -63,7 +63,7 @@ class CategoryAutoDeleter {
     }
     final String category = download.getAttribute(categoryAttribute);
     for (Rule rule : categories) {
-      if (rule.getWildcard().matches(category)) {
+      if (rule.getMatcher().matches(category)) {
         final long duration = now - completedTime;
         final String durationString = TimeUtils.formatDuration(duration);
         logger.log(String.format("%s age is %s", download.getName(), durationString));

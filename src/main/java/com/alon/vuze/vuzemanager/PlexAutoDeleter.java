@@ -120,7 +120,7 @@ class PlexAutoDeleter {
 
   private int getDaysIfMatch(String title, List<Rule> rules) {
     for (Rule rule : rules) {
-      if (rule.getWildcard().matches(title)) {
+      if (rule.getMatcher().matches(title)) {
         return rule.getArgAsInt();
       }
     }

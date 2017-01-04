@@ -4,7 +4,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import javax.inject.Qualifier;
 
-interface Annotations {
+public interface Annotations {
   @Qualifier
   @Retention(RetentionPolicy.RUNTIME)
   @interface PluginDirectory {}

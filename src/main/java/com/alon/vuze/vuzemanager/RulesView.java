@@ -1,10 +1,18 @@
 package com.alon.vuze.vuzemanager;
 
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
+import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
+import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
+
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -29,15 +37,6 @@ import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
-import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
-import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
 
 @SuppressWarnings("WeakerAccess")
 public class RulesView implements UISWTViewEventListener, DownloadCompletionListener {
@@ -188,7 +187,7 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
     }
     final Set<Rule> rules = config.getRules();
     rules.stream()
-        .filter(rule -> rule.getAction() == Rule.Action.FORCE_SEED && rule.getWildcard().matches(category))
+        .filter(rule -> rule.getAction() == Rule.Action.FORCE_SEED && rule.getMatcher().matches(category))
         .forEach(rule -> forceStart(download));
   }
 
