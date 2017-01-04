@@ -29,7 +29,6 @@ public class PlexClient {
 
   final private XPath xPath;
 
-  @SuppressWarnings("WeakerAccess")
   public PlexClient(String hostname, int port) throws ParserConfigurationException {
     this.hostname = hostname;
     this.port = port;

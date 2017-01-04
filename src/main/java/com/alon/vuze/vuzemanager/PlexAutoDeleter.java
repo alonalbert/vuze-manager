@@ -6,6 +6,7 @@ import com.alon.vuze.vuzemanager.plex.Directory;
 import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.plex.Video;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import org.gudy.azureus2.plugins.disk.DiskManagerFileInfo;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadException;
@@ -13,6 +14,7 @@ import org.gudy.azureus2.plugins.download.DownloadListener;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.download.DownloadRemovalVetoException;
 
+import javax.inject.Named;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +28,17 @@ class PlexAutoDeleter {
   private static final int LOG_DAYS = 30;
   @SuppressWarnings("unused")
   @Inject
-  private PlexClient plexClient;
+  Provider<PlexClient> plexClientProvider;
+
+  @SuppressWarnings("unused")
+  @Named("VuzeRoot")
+  @Inject
+  Provider<String> vuzeRootProvider;
+
+  @SuppressWarnings("unused")
+  @Named("PlexRoot")
+  @Inject
+  Provider<String> plexRootProvider;
 
   @SuppressWarnings("unused")
   @Inject
@@ -46,6 +58,7 @@ class PlexAutoDeleter {
   }
 
   void autoDeleteDownloads() {
+    final PlexClient plexClient = plexClientProvider.get();
     try {
       logger.log("Fetching show sections from Plex: " + plexClient);
       logger.setStatus("Fetching sections from Plex");
@@ -58,8 +71,8 @@ class PlexAutoDeleter {
 
       final Set<String> filesToDelete = new HashSet<>();
       final Set<String> allFiles = new HashSet<>();
-      final String plexRoot = ""; // todo
-      final String vuzeRoot = ""; //todo
+      final String plexRoot = plexRootProvider.get();
+      final String vuzeRoot = vuzeRootProvider.get();
 
       final long now = System.currentTimeMillis();
       final int[] byDay = new int[LOG_DAYS];

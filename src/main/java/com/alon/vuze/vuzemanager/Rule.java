@@ -3,11 +3,6 @@ package com.alon.vuze.vuzemanager;
 import com.alon.vuze.vuzemanager.utils.WildcardMatcher;
 
 public class Rule {
-
-  private static final String CATEGORY = "category";
-  private static final String ACTION = "action";
-  private static final String ARG = "arg";
-
   public enum Action {
     FORCE_SEED("vuzeManager.rules.action.forceSeed"),
     CATEGORY_AUTO_DELETE("vuzeManager.rules.action.categoryAutoDelete"),

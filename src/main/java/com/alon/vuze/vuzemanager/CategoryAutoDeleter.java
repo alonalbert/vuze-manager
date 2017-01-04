@@ -4,11 +4,11 @@ import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.utils.TimeUtils;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 
+import javax.inject.Named;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +35,7 @@ class CategoryAutoDeleter {
 
   @SuppressWarnings("unused")
   @Inject
-  @Named(VuzeManagerModule.TA_COMPLETED_TIME)
+  @Named(VuzeManagerPlugin.TA_COMPLETED_TIME)
   private TorrentAttribute completedTimeAttribute;
 
   @Inject

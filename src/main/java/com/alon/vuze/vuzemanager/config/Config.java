@@ -1,6 +1,5 @@
 package com.alon.vuze.vuzemanager.config;
 
-import com.alon.vuze.vuzemanager.Annotations.PluginDirectory;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -9,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileReader;
@@ -32,7 +32,7 @@ public class Config {
   private final Map<String, JsonElement> map;
 
   @Inject
-  public Config(@PluginDirectory String path, Logger logger) {
+  public Config(@Named("PluginDirectory") String path, Logger logger) {
     this.configFile = path + "/vuze-manager-options.json";
     this.logger = logger;
     map = load();

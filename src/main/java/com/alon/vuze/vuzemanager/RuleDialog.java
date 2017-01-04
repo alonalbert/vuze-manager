@@ -6,9 +6,9 @@ import com.alon.vuze.vuzemanager.plex.Directory;
 import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import com.google.inject.name.Named;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.xml.sax.SAXException;
 
+import javax.inject.Named;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
 import java.util.Collection;
@@ -47,7 +48,7 @@ public class RuleDialog {
 
   @SuppressWarnings("unused")
   @Inject
-  private PlexClient plexClient;
+  Provider<PlexClient> plexClientProvider;
 
   @SuppressWarnings("unused")
   @Inject
@@ -272,10 +273,10 @@ public class RuleDialog {
     messages.setLanguageText(wildcardLabel, "vuzeManager.rules.add.popup.section");
     wildcardCombo.removeAll();
     try {
-      final Collection<Directory> sections = plexClient.getShowSections();
+      final Collection<Directory> sections = plexClientProvider.get().getShowSections();
       sections.forEach(section -> wildcardCombo.add(section.getTitle()));
     } catch (IOException | SAXException | XPathExpressionException e) {
-      logger.log(e, "Falied to load sections");
+      logger.log(e, "Failed to load sections");
     }
   }
 

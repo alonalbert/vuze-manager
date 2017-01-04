@@ -6,7 +6,6 @@ import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -29,6 +28,7 @@ import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
+import javax.inject.Named;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -75,11 +75,11 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
 
   @SuppressWarnings("WeakerAccess")
   @Inject
-  @Named(VuzeManagerModule.TA_COMPLETED_TIME)
+  @Named(VuzeManagerPlugin.TA_COMPLETED_TIME)
   TorrentAttribute completedTimeAttribute;
 
   @Inject
-  VuzeManagerModule.Factory factory;
+  VuzeManagerPlugin.Factory factory;
 
   private Table table;
   private ToolItem remove;
@@ -219,7 +219,7 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
     final TableItem[] items = table.getSelection();
     if (items.length == 1) {
       final Rule rule = (Rule) items[0].getData();
-      final RuleDialog ruleDialog = factory.create(
+      final RuleDialog ruleDialog = factory.createRunDialog(
           getDisplay(),
           newRule -> handleAddedOrEdited(rule, newRule));
       ruleDialog.initializeAndOpen(rule);
@@ -227,7 +227,7 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
   }
 
   private void handleAddItem() {
-    final RuleDialog ruleDialog = factory.create(
+    final RuleDialog ruleDialog = factory.createRunDialog(
         getDisplay(),
         rule -> handleAddedOrEdited(null, rule));
     ruleDialog.initializeAndOpen(null);
