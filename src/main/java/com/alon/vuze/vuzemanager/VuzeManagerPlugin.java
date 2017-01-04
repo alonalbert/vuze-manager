@@ -34,7 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-class VuzeManagerPlugin extends AbstractModule implements Plugin, UIManagerListener {
+public class VuzeManagerPlugin extends AbstractModule implements Plugin, UIManagerListener {
   private static final String VIEW_ID = "VuzeManagerView";
   static final String TA_COMPLETED_TIME = "completedTime";
 
