@@ -1,6 +1,13 @@
 package com.alon.vuze.vuzemanager.config;
 
+import com.alon.vuze.vuzemanager.Rule;
+import com.alon.vuze.vuzemanager.Rule.Action;
 import com.alon.vuze.vuzemanager.logger.DebugLogger;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.truth.Truth;
+import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,6 +16,8 @@ import org.junit.Test;
  */
 public class ConfigTest {
 
+  public static final String KEY = "key";
+  private static final String NOKEY = "nokey";
   private Config config;
 
   @Before
@@ -18,6 +27,57 @@ public class ConfigTest {
 
   @Test
   public void testInt() throws Exception {
+    final int value = 1;
+    final int defaultValue = -1;
+    config.set(KEY, value);
+    Truth.assertThat(config.get(KEY, Integer.class)).isEqualTo(value);
+    Truth.assertThat(config.get(KEY, defaultValue)).isEqualTo(value);
+    Truth.assertThat(config.get(NOKEY, Integer.class)).isEqualTo(null);
+    Truth.assertThat(config.get(NOKEY, defaultValue)).isEqualTo(defaultValue);
   }
+
+  @Test
+  public void testString() throws Exception {
+    final String value = "value";
+    final String defaultValue = "default";
+    config.set(KEY, value);
+    Truth.assertThat(config.get(KEY, value.getClass())).isEqualTo(value);
+    Truth.assertThat(config.get(KEY, defaultValue)).isEqualTo(value);
+    Truth.assertThat(config.get(NOKEY, value.getClass())).isEqualTo(null);
+    Truth.assertThat(config.get(NOKEY, defaultValue)).isEqualTo(defaultValue);
+  }
+
+  @Test
+  public void testRule() throws Exception {
+    final Rule value = new Rule("q", Action.AUTO_DESTINATION, "a");
+    config.set(KEY, value);
+    Truth.assertThat(config.get(KEY, value.getClass())).isEqualTo(value);
+    Truth.assertThat(config.get(NOKEY, value.getClass())).isEqualTo(null);
+  }
+
+  @Test
+  public void testListOfStrings() throws Exception {
+    final List<String> value = Lists.newArrayList("1", "2");
+    final List<String> defaultValue = Lists.newArrayList();
+    config.set(KEY, value);
+    Truth.assertThat(config.get(KEY, value.getClass())).isEqualTo(value);
+    Truth.assertThat(config.get(KEY, defaultValue)).isEqualTo(value);
+    Truth.assertThat(config.get(NOKEY, value.getClass())).isEqualTo(null);
+    Truth.assertThat(config.get(NOKEY, defaultValue)).isEqualTo(defaultValue);
+  }
+
+  @Test
+  public void testMapOfInts() throws Exception {
+    final Map<String, Integer> value = Maps.newHashMap();
+    value.put("A", 1);
+    value.put("B", 2);
+    final Map<String, Integer> defaultValue = Maps.newHashMap();
+    config.set(KEY, value);
+    Truth.assertThat(config.get(KEY, value.getClass())).isEqualTo(value);
+    Truth.assertThat(config.get(KEY, defaultValue)).isEqualTo(value);
+    Truth.assertThat(config.get(NOKEY, value.getClass())).isEqualTo(null);
+    Truth.assertThat(config.get(NOKEY, defaultValue)).isEqualTo(defaultValue);
+  }
+
 
 }

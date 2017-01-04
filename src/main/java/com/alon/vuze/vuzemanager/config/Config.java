@@ -39,6 +39,16 @@ public class Config {
     map.put(key, gson.toJsonTree(value));
   }
 
+  public <T> T get(String key, T defaultValue) {
+    final JsonElement element = map.get(key);
+    if (element == null) {
+      return defaultValue;
+    }
+    final Class<?> cls = defaultValue.getClass();
+    //noinspection unchecked
+    return gson.fromJson(element, (Class<T>) cls);
+  }
+
   public <T> T get(String key, Class<T> cls) {
     final JsonElement element = map.get(key);
     return gson.fromJson(element, cls);

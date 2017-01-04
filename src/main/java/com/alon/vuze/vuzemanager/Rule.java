@@ -35,11 +35,11 @@ public class Rule {
   @Expose
   private final String arg;
 
-  public Rule(String category, Action action, String arg) {
-    this.qualifier = category;
+  public Rule(String qualifier, Action action, String arg) {
+    this.qualifier = qualifier;
     this.action = action;
     this.arg = arg;
-    matcher = new WildcardMatcher(category);
+    matcher = new WildcardMatcher(qualifier);
   }
 
   String getCategory() {
