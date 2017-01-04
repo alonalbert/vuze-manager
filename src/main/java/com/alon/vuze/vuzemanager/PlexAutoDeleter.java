@@ -87,7 +87,7 @@ class PlexAutoDeleter {
               if (age >= days) {
                 filesToDelete.addAll(normalizedFiles);
               } else {
-                final int daysTillDelete = days - age;
+                final int daysTillDelete = days - age - 1;
                 if (daysTillDelete < LOG_DAYS) {
                   byDay[daysTillDelete]++;
                 }
