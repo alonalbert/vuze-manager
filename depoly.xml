@@ -1,0 +1,18 @@
+<!--suppress XmlUnboundNsPrefix -->
+<project name="Deploy" default="deploy" basedir=".">
+    <description>
+        Deploy Vuze plugin to various destinations
+    </description>
+
+    <property file="src/main/plugin.properties"/>
+
+    <property name="plugin-file" location="out/artifacts/vuze-manager.jar"/>
+    <property name="dest-debug" location="run/plugins/vuze-manager/vuze-manager.jar"/>
+    <property name="dest-prod" location="${user.home}/.azureus/plugins/VuzeManager/VuzeManager_${plugin.version}.jar"/>
+
+
+    <target name="deploy">
+        <exec command="mvn install dependency:copy -DoutputDirectory=/home/al/.azureus/plugins/VuzeManager"/>
+    </target>
+</project>
+

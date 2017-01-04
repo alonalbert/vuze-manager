@@ -1,6 +1,9 @@
 package com.alon.vuze.vuzemanager;
 
 import com.alon.vuze.vuzemanager.config.Config;
+import com.alon.vuze.vuzemanager.logger.Logger;
+import com.alon.vuze.vuzemanager.plex.Directory;
+import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -18,7 +21,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
+import org.xml.sax.SAXException;
 
+import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.function.Predicate;
 
@@ -37,6 +44,14 @@ public class RuleDialog {
   @SuppressWarnings("unused")
   @Inject
   private Messages messages;
+
+  @SuppressWarnings("unused")
+  @Inject
+  private PlexClient plexClient;
+
+  @SuppressWarnings("unused")
+  @Inject
+  private Logger logger;
 
   @Inject
   @Named(TorrentAttribute.TA_CATEGORY)
@@ -256,14 +271,18 @@ public class RuleDialog {
   private void setQualifierToSection() {
     messages.setLanguageText(wildcardLabel, "vuzeManager.rules.add.popup.section");
     wildcardCombo.removeAll();
+    try {
+      final Collection<Directory> sections = plexClient.getShowSections();
+      sections.forEach(section -> wildcardCombo.add(section.getTitle()));
+    } catch (IOException | SAXException | XPathExpressionException e) {
+      logger.log(e, "Falied to load sections");
+    }
   }
 
   private void setQualifierToTorrentName() {
     messages.setLanguageText(wildcardLabel, "vuzeManager.rules.add.popup.torrent");
     wildcardCombo.removeAll();
-    for (String directory : directoryHistory) {
-      directoryCombo.add(directory);
-    }
+    directoryHistory.forEach(directory -> directoryCombo.add(directory));
   }
 
   interface OnOkListener {
