@@ -4,6 +4,9 @@ import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
+import com.alon.vuze.vuzemanager.rules.Rule;
+import com.alon.vuze.vuzemanager.rules.RuleDialog;
+import com.alon.vuze.vuzemanager.rules.Rules;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -25,18 +28,16 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.ADD;
 import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.REMOVE;
 import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
 
-@SuppressWarnings("WeakerAccess")
-public class RulesView implements UISWTViewEventListener {
+class MainView implements UISWTViewEventListener {
 
-  public static final String QUALIFIER_WIDTH = "rulesView.qualifierWidth";
-  public static final String ACTION_WIDTH = "rulesView.actionWidth";
-  public static final String ARG_WIDTH = "rulesView.argWidth";
+  private static final String QUALIFIER_WIDTH = "rulesView.qualifierWidth";
+  private static final String ACTION_WIDTH = "rulesView.actionWidth";
+  private static final String ARG_WIDTH = "rulesView.argWidth";
 
   @SuppressWarnings("unused")
   @Inject
@@ -55,10 +56,11 @@ public class RulesView implements UISWTViewEventListener {
   private ImageRepository imageRepository;
 
   @Inject
-  VuzeManagerPlugin.Factory factory;
+  private VuzeManagerPlugin.Factory factory;
 
   @Inject
-  private Set<Rule> rules;
+  private Rules rules;
+
   private Table table;
   private ToolItem remove;
   private TableColumn qualifier;
@@ -66,7 +68,7 @@ public class RulesView implements UISWTViewEventListener {
   private TableColumn arg;
 
   @Inject
-  public RulesView() {
+  public MainView() {
   }
 
   @Override
@@ -158,7 +160,7 @@ public class RulesView implements UISWTViewEventListener {
 
   private void delete() {
     imageRepository.unLoadImages();
-    config.set(VuzeManagerPlugin.RULES, rules);
+    rules.setConfig();
     config.set(QUALIFIER_WIDTH, qualifier.getWidth());
     config.set(ACTION_WIDTH, action.getWidth());
     config.set(ARG_WIDTH, arg.getWidth());
@@ -171,7 +173,7 @@ public class RulesView implements UISWTViewEventListener {
       final Rule rule = (Rule) items[0].getData();
       final RuleDialog ruleDialog = factory.createRunDialog(
           getDisplay(),
-          newRule -> handleAddedOrEdited(rule, newRule));
+          newRule -> updateRule(rule, newRule));
       ruleDialog.initializeAndOpen(rule);
     }
   }
@@ -179,15 +181,17 @@ public class RulesView implements UISWTViewEventListener {
   private void handleAddItem() {
     final RuleDialog ruleDialog = factory.createRunDialog(
         getDisplay(),
-        rule -> handleAddedOrEdited(null, rule));
+        this::addRule);
     ruleDialog.initializeAndOpen(null);
   }
 
-  private void handleAddedOrEdited(Rule oldConfig, Rule newConfig) {
-    if (oldConfig != null) {
-      rules.remove(oldConfig);
-    }
-    rules.add(newConfig);
+  private void addRule(Rule rule) {
+    rules.add(rule);
+    populateTable();
+  }
+
+  private void updateRule(Rule oldRule, Rule newRule) {
+    rules.update(oldRule, newRule);
     populateTable();
   }
 
@@ -195,7 +199,7 @@ public class RulesView implements UISWTViewEventListener {
     final TableItem[] items = table.getSelection();
     if(items.length == 1){
       final Rule rule = (Rule) items[0].getData();
-      rules.remove(rule);
+      rules.getRules().remove(rule);
       final int oldSelectedIndex = table.getSelectionIndex();
       populateTable();
       final int itemCount = table.getItemCount();
@@ -215,7 +219,7 @@ public class RulesView implements UISWTViewEventListener {
     try {
       if (table != null && !table.isDisposed()) {
         table.removeAll();
-        final List<Rule> sorted = new ArrayList<>(rules);
+        final List<Rule> sorted = new ArrayList<>(rules.getRules());
         sorted.sort(Comparator
             .comparing(Rule::getAction)
             .thenComparing(Rule::getCategory));

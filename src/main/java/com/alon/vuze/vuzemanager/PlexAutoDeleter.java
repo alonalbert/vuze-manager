@@ -4,7 +4,9 @@ import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.plex.Directory;
 import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.plex.Video;
-import com.alon.vuze.vuzemanager.utils.TorrentDeleted;
+import com.alon.vuze.vuzemanager.rules.Rule;
+import com.alon.vuze.vuzemanager.rules.Rules;
+import com.alon.vuze.vuzemanager.utils.TorrentDeleter;
 import com.google.inject.Provider;
 import org.gudy.azureus2.plugins.disk.DiskManagerFileInfo;
 import org.gudy.azureus2.plugins.download.Download;
@@ -20,11 +22,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.FAKE_DELETE;
 import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.PLEX_ROOT;
 import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.VUZE_ROOT;
+import static com.alon.vuze.vuzemanager.rules.Rule.Action.WATCHED_AUTO_DELETE;
 
 @Singleton
 class PlexAutoDeleter {
@@ -49,11 +51,10 @@ class PlexAutoDeleter {
   private Logger logger;
 
   @Inject
-  private TorrentDeleted torrentDeleter;
+  private TorrentDeleter torrentDeleter;
 
-  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
-  private Set<Rule> rules;
+  private Rules rules;
 
   @Inject
   private DownloadManager downloadManager;
@@ -70,10 +71,6 @@ class PlexAutoDeleter {
       final Collection<Directory> sections = plexClient.getShowSections();
       logger.log("Found " + sections.size() + " sections");
 
-      final List<Rule> relevantRules = rules.stream()
-          .filter(category -> category.getAction() == Rule.Action.WATCHED_AUTO_DELETE)
-          .collect(Collectors.toList());
-
       final Set<String> filesToDelete = new HashSet<>();
       final Set<String> allFiles = new HashSet<>();
       final String plexRoot = plexRootProvider.get();
@@ -84,8 +81,9 @@ class PlexAutoDeleter {
       logger.setStatus("Fetching episodes from Plex");
       final List<Video> watchedVideos = new ArrayList<>();
       for (Directory section : sections) {
-        final int days = getDaysIfMatch(section.getTitle(), relevantRules);
-        if (days > 0) {
+        final Rule rule = rules.findFirst(WATCHED_AUTO_DELETE, section.getTitle());
+        if (rule != null) {
+          final int days = rule.getArgAsInt();
           logger.log("Checking section " + section.getTitle());
           final List<Video> videos = plexClient.getEpisodes(section);
           for (Video video : videos) {
@@ -140,15 +138,6 @@ class PlexAutoDeleter {
     } finally {
       logger.setStatus("Idle");
     }
-  }
-
-  private int getDaysIfMatch(String title, List<Rule> rules) {
-    for (Rule rule : rules) {
-      if (rule.getMatcher().matches(title)) {
-        return rule.getArgAsInt();
-      }
-    }
-    return -1;
   }
 
   private void checkTorrents(Set<String> filesToDelete, Set<String> allFiles, String vuzeRoot) {

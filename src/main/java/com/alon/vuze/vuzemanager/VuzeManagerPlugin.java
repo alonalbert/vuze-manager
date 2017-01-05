@@ -7,14 +7,12 @@ import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.resources.VuzeMessages;
+import com.alon.vuze.vuzemanager.rules.RuleDialog;
 import com.alon.vuze.vuzemanager.utils.NetworkUtils;
-import com.google.common.reflect.TypeToken;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Provides;
-import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 import org.eclipse.swt.widgets.Display;
@@ -31,17 +29,15 @@ import org.gudy.azureus2.plugins.ui.model.BasicPluginConfigModel;
 
 import javax.inject.Named;
 import javax.xml.parsers.ParserConfigurationException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_ALREADY_MOVED;
 import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
 
 @SuppressWarnings("WeakerAccess")
 public class VuzeManagerPlugin extends AbstractModule implements Plugin {
-  static final String RULES = "rulesView.rules";
   public static final String VUZE_ROOT = "VuzeRoot";
   public static final String PLEX_ROOT = "PlexRoot";
   public static final String FAKE_DELETE = "FakeDelete";
@@ -62,7 +58,6 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
   private CategoryAutoDeleter categoryAutoDeleter;
   private PlexAutoDeleter plexAutoDeleter;
   private Config config;
-  private Set<Rule> rules;
   private BooleanParameter fakeDelete;
 
   public void initialize(PluginInterface pluginInterface) throws PluginException {
@@ -74,7 +69,6 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
     messages = new VuzeMessages();
     logger = new VuzeLogger(pluginInterface, messages);
     config = new Config(pluginInterface.getPerUserPluginDirectoryName(), logger);
-    rules = config.getTyped(RULES, new TypeToken<HashSet<Rule>>() {}.getType(), new HashSet<>());
 
     final Injector injector = Guice.createInjector(this);
     categoryAutoDeleter = injector.getInstance(CategoryAutoDeleter.class);
@@ -85,6 +79,7 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
 
     final DownloadEventNotifier eventNotifier = downloadManager.getGlobalDownloadEventNotifier();
     eventNotifier.addCompletionListener(pluginHandler);
+    eventNotifier.addListener(pluginHandler);
 
     scheduler.scheduleAtFixedRate(() -> {
       categoryAutoDeleter.autoDeleteDownloads();
@@ -93,7 +88,7 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
   }
 
 
-  interface Factory {
+  public interface Factory {
     RuleDialog createRunDialog(Display display, RuleDialog.OnOkListener onOkListener);
   }
 
@@ -104,7 +99,6 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
     bind(Config.class).toInstance(config);
     bind(Logger.class).toInstance(logger);
     bind(Messages.class).toInstance(messages);
-    bind(Key.get(new TypeLiteral<Set<Rule>>() {})).toInstance(rules);
     bind(ImageRepository.class).asEagerSingleton();
 
     install(new FactoryModuleBuilder()
@@ -116,6 +110,8 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
     }
     bind(TorrentAttribute.class).annotatedWith(Names.named(TA_COMPLETED_TIME))
         .toInstance(torrentManager.getPluginAttribute(TA_COMPLETED_TIME));
+    bind(TorrentAttribute.class).annotatedWith(Names.named(TA_ALREADY_MOVED))
+        .toInstance(torrentManager.getPluginAttribute(TA_ALREADY_MOVED));
   }
 
   @Provides

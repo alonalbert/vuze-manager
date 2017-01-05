@@ -1,4 +1,4 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.rules;
 
 import com.alon.vuze.vuzemanager.utils.WildcardMatcher;
 
@@ -36,7 +36,7 @@ public class Rule {
     return qualifier;
   }
 
-  WildcardMatcher getMatcher() {
+  public WildcardMatcher getMatcher() {
     return matcher;
   }
 

@@ -15,7 +15,7 @@ import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.FAKE_DELETE;
 
 
 @Singleton
-public class TorrentDeleted {
+public class TorrentDeleter {
 
   @Inject
   private Logger logger;
@@ -27,7 +27,7 @@ public class TorrentDeleted {
 
 
   @Inject
-  public TorrentDeleted() {
+  public TorrentDeleter() {
   }
 
   public void deleteDownload(Download download) {

@@ -1,4 +1,4 @@
-package com.alon.vuze.vuzemanager;
+package com.alon.vuze.vuzemanager.rules;
 
 import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;

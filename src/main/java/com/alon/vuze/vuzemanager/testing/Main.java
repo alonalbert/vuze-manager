@@ -1,7 +1,7 @@
 package com.alon.vuze.vuzemanager.testing;
 
-import com.alon.vuze.vuzemanager.Rule;
-import com.alon.vuze.vuzemanager.RuleDialog;
+import com.alon.vuze.vuzemanager.rules.Rule;
+import com.alon.vuze.vuzemanager.rules.RuleDialog;
 import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.DebugLogger;
 import com.alon.vuze.vuzemanager.logger.Logger;

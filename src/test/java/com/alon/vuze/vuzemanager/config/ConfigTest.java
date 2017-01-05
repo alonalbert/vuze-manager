@@ -1,7 +1,7 @@
 package com.alon.vuze.vuzemanager.config;
 
-import com.alon.vuze.vuzemanager.Rule;
-import com.alon.vuze.vuzemanager.Rule.Action;
+import com.alon.vuze.vuzemanager.rules.Rule;
+import com.alon.vuze.vuzemanager.rules.Rule.Action;
 import com.alon.vuze.vuzemanager.logger.DebugLogger;
 import com.google.common.collect.Lists;
 import com.google.common.truth.Truth;
