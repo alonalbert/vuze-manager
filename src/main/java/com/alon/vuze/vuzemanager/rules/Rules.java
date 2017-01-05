@@ -7,12 +7,14 @@ import com.google.common.reflect.TypeToken;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
 @Singleton
-public class Rules {
+public class Rules implements Collection<Rule> {
   private static final String RULES = "rulesView.rules";
 
   private final Config config;
@@ -25,12 +27,42 @@ public class Rules {
     rules = config.getTyped(RULES, new TypeToken<HashSet<Rule>>() {}.getType(), new HashSet<>());
   }
 
-  public Collection<Rule> getRules() {
-    return Collections.unmodifiableCollection(rules);
+  public boolean add(Rule rule) {
+    return rules.add(rule);
   }
 
-  public void add(Rule rule) {
-    rules.add(rule);
+  @Override
+  public boolean remove(Object o) {
+    return false;
+  }
+
+  @Override
+  public boolean containsAll(Collection<?> c) {
+    return false;
+  }
+
+  @Override
+  public boolean addAll(Collection<? extends Rule> c) {
+    return false;
+  }
+
+  @Override
+  public boolean removeAll(Collection<?> c) {
+    return false;
+  }
+
+  @Override
+  public boolean retainAll(Collection<?> c) {
+    return false;
+  }
+
+  @Override
+  public void clear() {
+
+  }
+
+  public void remove(Rule rule) {
+    rules.remove(rule);
   }
 
   public void update(Rule oldRule, Rule newRule) {
@@ -48,4 +80,44 @@ public class Rules {
         .findFirst().orElse(null);
   }
 
+  @Override
+  public int size() {
+    return rules.size();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return rules.isEmpty();
+  }
+
+  @Override
+  public boolean contains(Object o) {
+    return rules.contains(o);
+  }
+
+  @Override
+  public Iterator<Rule> iterator() {
+    return rules.iterator();
+  }
+
+  @Override
+  public Object[] toArray() {
+    return rules.toArray();
+  }
+
+  @SuppressWarnings("SuspiciousToArrayCall")
+  @Override
+  public <T> T[] toArray(T[] a) {
+    return rules.toArray(a);
+  }
+
+  @Override
+  public void forEach(Consumer<? super Rule> action) {
+    rules.forEach(action);
+  }
+
+  @Override
+  public Spliterator<Rule> spliterator() {
+    return rules.spliterator();
+  }
 }

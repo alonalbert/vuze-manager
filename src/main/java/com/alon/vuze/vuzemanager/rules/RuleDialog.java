@@ -217,8 +217,8 @@ public class RuleDialog {
   }
 
   private void onOk() {
-    final String wildcard = wildcardCombo.getText();
-    if (!wildcard.isEmpty()) {
+    if (validateData()) {
+      final String wildcard = wildcardCombo.getText();
       final Rule.Action action = getAction();
 
       final Rule rule;
@@ -246,6 +246,17 @@ public class RuleDialog {
         onOkListener.onOk(rule);
       }
     }
+  }
+
+  @SuppressWarnings("RedundantIfStatement")
+  private boolean validateData() {
+    if (wildcardCombo.getText().trim().isEmpty()) {
+      return false;
+    }
+    if (actionCombo.getSelectionIndex() == Rule.Action.AUTO_DESTINATION.ordinal() && directoryCombo.getText().trim().isEmpty()) {
+      return false;
+    }
+    return true;
   }
 
   private void onCancel() {

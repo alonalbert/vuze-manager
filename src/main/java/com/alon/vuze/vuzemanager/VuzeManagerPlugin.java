@@ -33,7 +33,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_ALREADY_MOVED;
 import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
 
 @SuppressWarnings("WeakerAccess")
@@ -110,8 +109,6 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
     }
     bind(TorrentAttribute.class).annotatedWith(Names.named(TA_COMPLETED_TIME))
         .toInstance(torrentManager.getPluginAttribute(TA_COMPLETED_TIME));
-    bind(TorrentAttribute.class).annotatedWith(Names.named(TA_ALREADY_MOVED))
-        .toInstance(torrentManager.getPluginAttribute(TA_ALREADY_MOVED));
   }
 
   @Provides

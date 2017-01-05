@@ -17,12 +17,13 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
 
-import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_ALREADY_MOVED;
 import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
+import static com.alon.vuze.vuzemanager.rules.Rule.Action.FORCE_SEED;
 
 @Singleton
 class PluginHandler implements UIManagerListener, DownloadCompletionListener, DownloadListener {
   private static final String VIEW_ID = "VuzeManagerView";
+  public static final String AUTO_DEST_CATEGORY = "auto-dest";
 
   @Inject
   @Named(TorrentAttribute.TA_CATEGORY)
@@ -32,10 +33,7 @@ class PluginHandler implements UIManagerListener, DownloadCompletionListener, Do
   @Named(TA_COMPLETED_TIME)
   private TorrentAttribute completedTimeAttribute;
 
-  @Inject
-  @Named(TA_ALREADY_MOVED)
-  private TorrentAttribute alreadyMoved;
-
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
   private Rules rules;
 
@@ -59,14 +57,11 @@ class PluginHandler implements UIManagerListener, DownloadCompletionListener, Do
     if (category == null) {
       return;
     }
-    rules.getRules().stream()
-        .filter(rule -> rule.getAction() == Rule.Action.FORCE_SEED && rule.getMatcher().matches(category))
-        .forEach(rule -> forceStart(download));
-  }
-
-  private void forceStart(Download download) {
-    logger.log("Download %s force started.", download);
-    download.setForceStart(true);
+    final Rule rule = rules.findFirst(FORCE_SEED, category);
+    if (rule != null) {
+      logger.log("Download %s force started.", download);
+      download.setForceStart(true);
+    }
   }
 
   @Override
@@ -92,9 +87,12 @@ class PluginHandler implements UIManagerListener, DownloadCompletionListener, Do
 
   private void maybeAutoMove(Download download) {
     final String downloadName = download.getName();
-    if (downloadName.startsWith("Metadata download for "))
+    if (downloadName.startsWith("Metadata download for ")) {
       return;
-    if (download.getBooleanAttribute(alreadyMoved)) {
+    }
+    final String category = download.getAttribute(categoryAttribute);
+
+    if (category != null && !category.isEmpty() ) {
       return;
     }
     final Rule rule = rules.findFirst(Rule.Action.AUTO_DESTINATION, downloadName);
@@ -117,7 +115,7 @@ class PluginHandler implements UIManagerListener, DownloadCompletionListener, Do
     }
     try {
       download.moveDataFiles(file);
-      download.setBooleanAttribute(alreadyMoved, true);
+      download.setAttribute(categoryAttribute, AUTO_DEST_CATEGORY);
     } catch (DownloadException e) {
       logger.log(e, "Could not move download");
     }
