@@ -79,9 +79,6 @@ class PluginHandler implements UIManagerListener, DownloadCompletionListener, Do
 
   @Override
   public void stateChanged(Download download, int old_state, int new_state) {
-    final String downloadName = download.getName();
-    logger.log("Download %s: %s - > %s", downloadName, Download.ST_NAMES[old_state], Download.ST_NAMES[new_state]);
-
     maybeAutoMove(download);
   }
 
