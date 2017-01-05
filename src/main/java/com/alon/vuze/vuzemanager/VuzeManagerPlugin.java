@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
 
+@SuppressWarnings("WeakerAccess")
 public class VuzeManagerPlugin extends AbstractModule implements Plugin {
   static final String RULES = "rulesView.rules";
 

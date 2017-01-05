@@ -15,6 +15,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -25,6 +26,7 @@ import org.xml.sax.SAXException;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.xml.xpath.XPathExpressionException;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -74,7 +76,7 @@ public class RuleDialog {
   private LinkedList<String> directoryHistory = new LinkedList<>();
 
   @AssistedInject
-  RuleDialog(
+  public RuleDialog(
       @Assisted Display display,
       @Assisted OnOkListener onOkListener) {
     this.display = display;
@@ -82,7 +84,7 @@ public class RuleDialog {
     shell = new Shell();
   }
 
-  void initializeAndOpen(Rule rule) {
+  public void initializeAndOpen(Rule rule) {
     directoryHistory = config.get(DIRECTORY_HISTORY, new LinkedList<>());
 
     shell.setLayout(new GridLayout());
@@ -92,7 +94,7 @@ public class RuleDialog {
 
     final Composite body = new Composite(shell, SWT.BORDER);
     body.setLayout(twoColumnLayout);
-    body.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    body.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
     wildcardLabel = new Label(body, SWT.NULL);
     final GridData labelLayout = new GridData();
@@ -115,7 +117,7 @@ public class RuleDialog {
       actionCombo.add(messages.getString(action.getMessageKey()));
     }
 
-    final GridData twoSpanData = new GridData();
+    final GridData twoSpanData = new GridData(SWT.FILL, SWT.CENTER, false, false);
     twoSpanData.horizontalSpan = 2;
 
     days = new Composite(body, SWT.NULL);
@@ -132,7 +134,7 @@ public class RuleDialog {
     daysSpinner.setMinimum(1);
 
     directory = new Composite(body, SWT.NULL);
-    directory.setLayout(twoColumnLayout);
+    directory.setLayout(new GridLayout(3, false));
     directory.setLayoutData(twoSpanData);
 
     final Label directoryLabel = new Label(directory, SWT.NULL);
@@ -141,6 +143,10 @@ public class RuleDialog {
 
     directoryCombo = new Combo(directory, SWT.SINGLE | SWT.BORDER);
     directoryCombo.setLayoutData(valueLayout);
+
+    final Button browse = new Button(directory, SWT.NULL);
+    messages.setLanguageText(browse, "vuzeManager.rules.add.popup.directory.browse");
+    browse.addListener(SWT.Selection, event -> onBrowse(shell));
 
     actionCombo.addModifyListener(e -> onActionChanged());
     actionCombo.setText(actionCombo.getItem(config.get(LAST_USED_ACTION, Rule.Action.AUTO_DESTINATION).ordinal()));
@@ -181,15 +187,33 @@ public class RuleDialog {
     shell.open();
   }
 
-  private void onCancel() {
-    saveConfig();
-    shell.dispose();
-  }
-
   private void saveConfig() {
     config.set(RULE_DIALOG_LOCATION, shell.getLocation());
     config.set(RULE_DIALOG_SIZE, shell.getSize());
     config.save();
+  }
+
+  private void onBrowse(Shell shell) {
+    final DirectoryDialog dlg = new DirectoryDialog(shell);
+    final String filter;
+    final String text = directoryCombo.getText();
+    if (!text.isEmpty()) {
+      filter = text;
+    } else {
+      if (!directoryHistory.isEmpty()) {
+        filter = new File(directoryHistory.getFirst()).getParent();
+      } else {
+        filter = "";
+      }
+    }
+    dlg.setFilterPath(filter);
+
+    dlg.setText(messages.getString("vuzeManager.rules.add.popup.directory.browse.title"));
+    dlg.setMessage(messages.getString("vuzeManager.rules.add.popup.directory.browse.message"));
+    final String dir = dlg.open();
+    if (dir != null) {
+      directoryCombo.setText(dir);
+    }
   }
 
   private void onOk() {
@@ -216,12 +240,17 @@ public class RuleDialog {
           throw new RuntimeException("Should never happen");
       }
       config.set(LAST_USED_ACTION, action);
+      saveConfig();
       shell.dispose();
       if (onOkListener != null) {
         onOkListener.onOk(rule);
       }
     }
+  }
+
+  private void onCancel() {
     saveConfig();
+    shell.dispose();
   }
 
   private void addDirectoryHistory(String directory) {
@@ -286,7 +315,11 @@ public class RuleDialog {
     directoryHistory.forEach(directory -> directoryCombo.add(directory));
   }
 
-  interface OnOkListener {
+  public boolean isDisposed() {
+    return shell.isDisposed();
+  }
+
+  public interface OnOkListener {
     void onOk(Rule rule);
   }
 }

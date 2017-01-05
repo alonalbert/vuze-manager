@@ -66,6 +66,8 @@ public class Config {
     try {
       if (!file.exists()) {
         //noinspection ResultOfMethodCallIgnored
+        file.getParentFile().mkdirs();
+        //noinspection ResultOfMethodCallIgnored
         file.createNewFile();
       }
       try (FileWriter out = new FileWriter(file)) {

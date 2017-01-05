@@ -32,7 +32,7 @@ public class Rule {
     matcher = new WildcardMatcher(qualifier);
   }
 
-  String getCategory() {
+  public String getCategory() {
     return qualifier;
   }
 
@@ -40,15 +40,15 @@ public class Rule {
     return matcher;
   }
 
-  Action getAction() {
+  public Action getAction() {
     return action;
   }
 
-  String getArg() {
+  public String getArg() {
     return arg;
   }
 
-  int getArgAsInt() {
+  public int getArgAsInt() {
     return Integer.parseInt(arg);
   }
 
