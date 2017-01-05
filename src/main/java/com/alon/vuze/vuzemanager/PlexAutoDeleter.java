@@ -4,13 +4,11 @@ import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.plex.Directory;
 import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.plex.Video;
+import com.alon.vuze.vuzemanager.utils.TorrentDeleted;
 import com.google.inject.Provider;
 import org.gudy.azureus2.plugins.disk.DiskManagerFileInfo;
 import org.gudy.azureus2.plugins.download.Download;
-import org.gudy.azureus2.plugins.download.DownloadException;
-import org.gudy.azureus2.plugins.download.DownloadListener;
 import org.gudy.azureus2.plugins.download.DownloadManager;
-import org.gudy.azureus2.plugins.download.DownloadRemovalVetoException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -24,6 +22,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.FAKE_DELETE;
+import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.PLEX_ROOT;
+import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.VUZE_ROOT;
+
 @Singleton
 class PlexAutoDeleter {
   private static final int LOG_DAYS = 30;
@@ -32,15 +34,22 @@ class PlexAutoDeleter {
   private Provider<PlexClient> plexClientProvider;
 
   @Inject
-  @Named("VuzeRoot")
+  @Named(VUZE_ROOT)
   private Provider<String> vuzeRootProvider;
 
-  @Named("PlexRoot")
+  @Named(PLEX_ROOT)
   @Inject private
   Provider<String> plexRootProvider;
 
+  @Named(FAKE_DELETE)
+  @Inject private
+  Provider<Boolean> fakeDeleteProvider;
+
   @Inject
   private Logger logger;
+
+  @Inject
+  private TorrentDeleted torrentDeleter;
 
   @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
@@ -161,33 +170,7 @@ class PlexAutoDeleter {
         }
       }
       if (servedByPlex && isWatched) {
-        if (download.getState() == Download.ST_STOPPED) {
-          logger.log("    Deleting " + download.getTorrentFileName());
-          removeDownload(download);
-        } else {
-          download.addListener(new DownloadListener() {
-            @Override
-            public void stateChanged(Download download, int oldState, int newState) {
-              if (newState == Download.ST_STOPPED) {
-                logger.log("    Deleting " + download.getTorrentFileName());
-                removeDownload(download);
-              }
-            }
-
-            @Override
-            public void positionChanged(Download download, int oldPosition, int newPosition) {
-              // noop
-            }
-          });
-          try {
-            logger.log("    Stopping " + download.getTorrentFileName());
-            if (false) { // todo
-              download.stop();
-            }
-          } catch (DownloadException e) {
-            logger.log("Error", e);
-          }
-        }
+        torrentDeleter.deleteDownload(download);
       }
     }
   }
@@ -198,22 +181,20 @@ class PlexAutoDeleter {
       logger.log("Deleting orphans");
       for (String filename : filesToDelete) {
         final File file = new File(vuzeRoot + filename);
-        logger.log("    Deleting " + file);
-        if (false) { // todo
+        if (!file.exists()) {
+          logger.log("File %s doesn't exist. Perhaps it was very deleted recently", file);
+          continue;
+        }
+        logger.log("Deleting %s", file);
+        if (fakeDeleteProvider.get()) {
+          logger.log("Not actually deleted - see Settings");
+        } else {
           final boolean deleted = file.delete();
-          logger.log("    Deleted: " + deleted);
+          if (!deleted) {
+            logger.log("Failed to delete file. Maybe it's locked");
+          }
         }
       }
-    }
-  }
-
-  private void removeDownload(Download download) {
-    try {
-      if (false) { // todo
-        download.remove(true, true);
-      }
-    } catch (DownloadException | DownloadRemovalVetoException e) {
-      logger.log("Error", e);
     }
   }
 

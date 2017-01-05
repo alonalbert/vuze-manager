@@ -1,5 +1,6 @@
 package com.alon.vuze.vuzemanager.testing;
 
+import com.alon.vuze.vuzemanager.Rule;
 import com.alon.vuze.vuzemanager.RuleDialog;
 import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.DebugLogger;
@@ -55,7 +56,7 @@ class Main {
     final Display display = new Display();
     final RuleDialog ruleDialog = injector.getInstance(Factory.class)
         .createRunDialog(display, rule -> System.out.println(rule));
-    ruleDialog.initializeAndOpen(null);
+    ruleDialog.initializeAndOpen(new Rule("kkk", Rule.Action.CATEGORY_AUTO_DELETE, "1"));
 
     while (!ruleDialog.isDisposed()) {
       if (!display.readAndDispatch()) {

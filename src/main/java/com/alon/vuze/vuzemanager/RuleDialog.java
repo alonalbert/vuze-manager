@@ -265,6 +265,7 @@ public class RuleDialog {
   }
 
   private void onActionChanged() {
+    final String wildcardComboText = wildcardCombo.getText();
     final Rule.Action action = getAction();
     switch (action) {
       case FORCE_SEED:
@@ -288,6 +289,7 @@ public class RuleDialog {
         directory.setVisible(true);
         break;
     }
+    wildcardCombo.setText(wildcardComboText);
   }
 
   private void setQualifierToCategory() {

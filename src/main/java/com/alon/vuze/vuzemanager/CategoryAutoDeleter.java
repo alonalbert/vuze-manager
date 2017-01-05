@@ -3,6 +3,8 @@ package com.alon.vuze.vuzemanager;
 import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.utils.TimeUtils;
+import com.alon.vuze.vuzemanager.utils.TorrentDeleted;
+import com.google.inject.Provider;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
@@ -17,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
+import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.FAKE_DELETE;
 
 @Singleton
 class CategoryAutoDeleter {
@@ -31,12 +34,19 @@ class CategoryAutoDeleter {
   private Config config;
 
   @Inject
+  private TorrentDeleted torrentDeleter;
+
+  @Inject
   @Named(TorrentAttribute.TA_CATEGORY)
   private TorrentAttribute categoryAttribute;
 
   @Inject
   @Named(TA_COMPLETED_TIME)
   private TorrentAttribute completedTimeAttribute;
+
+  @Named(FAKE_DELETE)
+  @Inject private
+  Provider<Boolean> fakeDeleteProvider;
 
   @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
@@ -77,13 +87,9 @@ class CategoryAutoDeleter {
         final long duration = now - completedTime;
         final String durationString = TimeUtils.formatDuration(duration);
         logger.log(String.format("%s age is %s", download.getName(), durationString));
-        if (TimeUnit.MILLISECONDS.toDays(duration) > rule.getArgAsInt()) {
+        if (TimeUnit.MILLISECONDS.toDays(duration) >= rule.getArgAsInt()) {
           logger.log(String.format("Deleting %s after %s", durationString, download.getName()));
-//          try {
-//            download.remove(true, true);
-//          } catch (DownloadException | DownloadRemovalVetoException e) {
-//            logger.log(e, "Error deleting %s", download.getName());
-//          }
+          torrentDeleter.deleteDownload(download);
         }
       }
     }

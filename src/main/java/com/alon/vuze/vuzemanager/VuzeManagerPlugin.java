@@ -25,6 +25,7 @@ import org.gudy.azureus2.plugins.download.DownloadEventNotifier;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.plugins.torrent.TorrentManager;
+import org.gudy.azureus2.plugins.ui.config.BooleanParameter;
 import org.gudy.azureus2.plugins.ui.config.StringParameter;
 import org.gudy.azureus2.plugins.ui.model.BasicPluginConfigModel;
 
@@ -41,6 +42,9 @@ import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIM
 @SuppressWarnings("WeakerAccess")
 public class VuzeManagerPlugin extends AbstractModule implements Plugin {
   static final String RULES = "rulesView.rules";
+  public static final String VUZE_ROOT = "VuzeRoot";
+  public static final String PLEX_ROOT = "PlexRoot";
+  public static final String FAKE_DELETE = "FakeDelete";
 
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
@@ -59,6 +63,7 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
   private PlexAutoDeleter plexAutoDeleter;
   private Config config;
   private Set<Rule> rules;
+  private BooleanParameter fakeDelete;
 
   public void initialize(PluginInterface pluginInterface) throws PluginException {
     torrentManager = pluginInterface.getTorrentManager();
@@ -124,15 +129,21 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
   }
 
   @Provides
-  @Named("VuzeRoot")
+  @Named(VUZE_ROOT)
   String provideVuzeRoot() {
     return vuzeRoot.getValue();
   }
 
   @Provides
-  @Named("PlexRoot")
+  @Named(PLEX_ROOT)
   String providePlexRoot() {
     return plexRoot.getValue();
+  }
+
+  @Provides
+  @Named(FAKE_DELETE)
+  boolean provideFakeDelete() {
+    return fakeDelete.getValue();
   }
 
   private void createConfigModule(PluginInterface pluginInterface) {
@@ -145,6 +156,8 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
     plexPort = configModel.addStringParameter2("port", "vuzeManager.config.plexPort", "32400");
     vuzeRoot = configModel.addStringParameter2("vuze-root", "vuzeManager.config.vuzeRoot", "");
     plexRoot = configModel.addStringParameter2("plex-root", "vuzeManager.config.plexRoot", "");
+
+    fakeDelete = configModel.addBooleanParameter2("fake-delete", "vuzeManager.config.fakeDelete", false);
 
     configModel.addActionParameter2(null, "vuzeManager.config.checkCategoryDeleteNow")
         .addListener(param -> scheduler.schedule(() ->
