@@ -7,6 +7,7 @@ import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.resources.VuzeMessages;
+import com.alon.vuze.vuzemanager.utils.NetworkUtils;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -139,7 +140,7 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
 
     configModel.addLabelParameter2("vuzeManager.config.title");
 
-    plexServer = configModel.addStringParameter2("server", "vuzeManager.config.plexServer", "localhost");
+    plexServer = configModel.addStringParameter2("server", "vuzeManager.config.plexServer", NetworkUtils.getLocalhostAddress());
     plexPort = configModel.addStringParameter2("port", "vuzeManager.config.plexPort", "32400");
     vuzeRoot = configModel.addStringParameter2("vuze-root", "vuzeManager.config.vuzeRoot", "");
     plexRoot = configModel.addStringParameter2("plex-root", "vuzeManager.config.plexRoot", "");
