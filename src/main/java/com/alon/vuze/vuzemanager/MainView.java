@@ -199,7 +199,7 @@ class MainView implements UISWTViewEventListener {
     final TableItem[] items = table.getSelection();
     if(items.length == 1){
       final Rule rule = (Rule) items[0].getData();
-      rules.getRules().remove(rule);
+      rules.remove(rule);
       final int oldSelectedIndex = table.getSelectionIndex();
       populateTable();
       final int itemCount = table.getItemCount();
@@ -219,7 +219,7 @@ class MainView implements UISWTViewEventListener {
     try {
       if (table != null && !table.isDisposed()) {
         table.removeAll();
-        final List<Rule> sorted = new ArrayList<>(rules.getRules());
+        final List<Rule> sorted = new ArrayList<>(rules);
         sorted.sort(Comparator
             .comparing(Rule::getAction)
             .thenComparing(Rule::getCategory));
