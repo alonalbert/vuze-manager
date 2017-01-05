@@ -7,41 +7,41 @@ import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.resources.VuzeMessages;
+import com.google.common.reflect.TypeToken;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Provides;
+import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 import org.eclipse.swt.widgets.Display;
 import org.gudy.azureus2.plugins.Plugin;
 import org.gudy.azureus2.plugins.PluginException;
 import org.gudy.azureus2.plugins.PluginInterface;
+import org.gudy.azureus2.plugins.download.DownloadEventNotifier;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.plugins.torrent.TorrentManager;
-import org.gudy.azureus2.plugins.ui.UIInstance;
-import org.gudy.azureus2.plugins.ui.UIManagerListener;
 import org.gudy.azureus2.plugins.ui.config.StringParameter;
 import org.gudy.azureus2.plugins.ui.model.BasicPluginConfigModel;
-import org.gudy.azureus2.plugins.ui.model.BasicPluginViewModel;
-import org.gudy.azureus2.ui.swt.plugins.UISWTInstance;
-import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
 import javax.inject.Named;
 import javax.xml.parsers.ParserConfigurationException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class VuzeManagerPlugin extends AbstractModule implements Plugin, UIManagerListener {
-  private static final String VIEW_ID = "VuzeManagerView";
-  static final String TA_COMPLETED_TIME = "completedTime";
+import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
+
+public class VuzeManagerPlugin extends AbstractModule implements Plugin {
+  static final String RULES = "rulesView.rules";
 
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-
-  private PluginInterface pluginInterface;
   private DownloadManager downloadManager;
   private TorrentManager torrentManager;
 
@@ -53,28 +53,31 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin, UIManag
   private StringParameter vuzeRoot;
   private StringParameter plexRoot;
 
-  private Injector injector;
   private CategoryAutoDeleter categoryAutoDeleter;
   private PlexAutoDeleter plexAutoDeleter;
+  private Config config;
+  private Set<Rule> rules;
 
   public void initialize(PluginInterface pluginInterface) throws PluginException {
-    this.pluginInterface = pluginInterface;
     torrentManager = pluginInterface.getTorrentManager();
     downloadManager = pluginInterface.getDownloadManager();
 
-    messages = new VuzeMessages();
-
     createConfigModule(pluginInterface);
 
-    final String title = messages.getString("Views.plugins.VuzeManagerView.title");
-    final BasicPluginViewModel viewModel = pluginInterface.getUIManager().createBasicPluginViewModel(title);
-    logger = new VuzeLogger(pluginInterface.getLogger().getTimeStampedChannel(title), viewModel);
+    messages = new VuzeMessages();
+    logger = new VuzeLogger(pluginInterface, messages);
+    config = new Config(pluginInterface.getPerUserPluginDirectoryName(), logger);
+    rules = config.getTyped(RULES, new TypeToken<HashSet<Rule>>() {}.getType(), new HashSet<>());
 
-    injector = Guice.createInjector(this);
+    final Injector injector = Guice.createInjector(this);
     categoryAutoDeleter = injector.getInstance(CategoryAutoDeleter.class);
     plexAutoDeleter = injector.getInstance(PlexAutoDeleter.class);
 
-    pluginInterface.getUIManager().addUIListener(this);
+    final PluginHandler pluginHandler = injector.getInstance(PluginHandler.class);
+    pluginInterface.getUIManager().addUIListener(pluginHandler);
+
+    final DownloadEventNotifier eventNotifier = downloadManager.getGlobalDownloadEventNotifier();
+    eventNotifier.addCompletionListener(pluginHandler);
 
     scheduler.scheduleAtFixedRate(() -> {
       categoryAutoDeleter.autoDeleteDownloads();
@@ -82,40 +85,6 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin, UIManag
     }, 0, 1, TimeUnit.DAYS);
   }
 
-  @Override
-  public void UIAttached(UIInstance instance) {
-    if (instance instanceof UISWTInstance) {
-      final UISWTInstance swtInstance = ((UISWTInstance) instance);
-      final UISWTViewEventListener view =  injector.getInstance(RulesView.class);
-      swtInstance.addView(UISWTInstance.VIEW_MAIN, VIEW_ID, view);
-      swtInstance.openMainView(VIEW_ID, view, null);
-    }
-  }
-
-  @Override
-  public void UIDetached(UIInstance instance) {
-
-  }
-
-  private void createConfigModule(PluginInterface pluginInterface) {
-    final BasicPluginConfigModel configModel = pluginInterface.getUIManager()
-        .createBasicPluginConfigModel("ConfigView.section.vuzeManager");
-
-    configModel.addLabelParameter2("vuzeManager.config.title");
-
-    plexServer = configModel.addStringParameter2("server", "vuzeManager.config.plexServer", "localhost");
-    plexPort = configModel.addStringParameter2("port", "vuzeManager.config.plexPort", "32400");
-    vuzeRoot = configModel.addStringParameter2("vuze-root", "vuzeManager.config.vuzeRoot", "");
-    plexRoot = configModel.addStringParameter2("plex-root", "vuzeManager.config.plexRoot", "");
-
-    configModel.addActionParameter2(null, "vuzeManager.config.checkCategoryDeleteNow")
-        .addListener(param -> scheduler.schedule(() ->
-            categoryAutoDeleter.autoDeleteDownloads(), 0, TimeUnit.MILLISECONDS));
-
-    configModel.addActionParameter2(null, "vuzeManager.config.checkPlexDeleteNow")
-        .addListener(param -> scheduler.schedule(() ->
-            plexAutoDeleter.autoDeleteDownloads(), 0, TimeUnit.MILLISECONDS));
-  }
 
   interface Factory {
     RuleDialog createRunDialog(Display display, RuleDialog.OnOkListener onOkListener);
@@ -123,14 +92,13 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin, UIManag
 
   @Override
   protected void configure() {
-    bind(PluginInterface.class).toInstance(pluginInterface);
     bind(DownloadManager.class).toInstance(downloadManager);
-    bind(Config.class);
-    bind(String.class).annotatedWith(Names.named("PluginDirectory"))
-        .toInstance(pluginInterface.getPluginDirectoryName());
+
+    bind(Config.class).toInstance(config);
     bind(Logger.class).toInstance(logger);
     bind(Messages.class).toInstance(messages);
-    bind(ImageRepository.class);
+    bind(Key.get(new TypeLiteral<Set<Rule>>() {})).toInstance(rules);
+    bind(ImageRepository.class).asEagerSingleton();
 
     install(new FactoryModuleBuilder()
         .build(Factory.class));
@@ -139,7 +107,6 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin, UIManag
       bind(TorrentAttribute.class).annotatedWith(Names.named(torrentAttribute.getName()))
           .toInstance(torrentAttribute);
     }
-    bind(CategoryAutoDeleter.class).asEagerSingleton();
     bind(TorrentAttribute.class).annotatedWith(Names.named(TA_COMPLETED_TIME))
         .toInstance(torrentManager.getPluginAttribute(TA_COMPLETED_TIME));
   }
@@ -165,4 +132,25 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin, UIManag
   String providePlexRoot() {
     return plexRoot.getValue();
   }
+
+  private void createConfigModule(PluginInterface pluginInterface) {
+    final BasicPluginConfigModel configModel = pluginInterface.getUIManager()
+        .createBasicPluginConfigModel("ConfigView.section.vuzeManager");
+
+    configModel.addLabelParameter2("vuzeManager.config.title");
+
+    plexServer = configModel.addStringParameter2("server", "vuzeManager.config.plexServer", "localhost");
+    plexPort = configModel.addStringParameter2("port", "vuzeManager.config.plexPort", "32400");
+    vuzeRoot = configModel.addStringParameter2("vuze-root", "vuzeManager.config.vuzeRoot", "");
+    plexRoot = configModel.addStringParameter2("plex-root", "vuzeManager.config.plexRoot", "");
+
+    configModel.addActionParameter2(null, "vuzeManager.config.checkCategoryDeleteNow")
+        .addListener(param -> scheduler.schedule(() ->
+            categoryAutoDeleter.autoDeleteDownloads(), 0, TimeUnit.MILLISECONDS));
+
+    configModel.addActionParameter2(null, "vuzeManager.config.checkPlexDeleteNow")
+        .addListener(param -> scheduler.schedule(() ->
+            plexAutoDeleter.autoDeleteDownloads(), 0, TimeUnit.MILLISECONDS));
+  }
+
 }

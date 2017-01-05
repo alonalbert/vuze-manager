@@ -4,8 +4,6 @@ import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
 import com.alon.vuze.vuzemanager.resources.Messages;
-import com.google.common.reflect.TypeToken;
-import com.google.inject.Inject;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
@@ -20,19 +18,12 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.gudy.azureus2.core3.internat.MessageText;
-import org.gudy.azureus2.plugins.download.Download;
-import org.gudy.azureus2.plugins.download.DownloadCompletionListener;
-import org.gudy.azureus2.plugins.download.DownloadEventNotifier;
-import org.gudy.azureus2.plugins.download.DownloadManager;
-import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEvent;
 import org.gudy.azureus2.ui.swt.plugins.UISWTViewEventListener;
 
-import javax.inject.Named;
-import java.lang.reflect.Type;
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,13 +32,11 @@ import static com.alon.vuze.vuzemanager.resources.ImageRepository.ImageResource.
 import static org.gudy.azureus2.ui.swt.Utils.getDisplay;
 
 @SuppressWarnings("WeakerAccess")
-public class RulesView implements UISWTViewEventListener, DownloadCompletionListener {
+public class RulesView implements UISWTViewEventListener {
 
-  public static final String RULES = "rulesView.rules";
   public static final String QUALIFIER_WIDTH = "rulesView.qualifierWidth";
   public static final String ACTION_WIDTH = "rulesView.actionWidth";
   public static final String ARG_WIDTH = "rulesView.argWidth";
-  public static final Type RULES_TYPE = new TypeToken<HashSet<Rule>>() {}.getType();
 
   @SuppressWarnings("unused")
   @Inject
@@ -66,28 +55,15 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
   private ImageRepository imageRepository;
 
   @Inject
-  DownloadManager downloadManager;
-
-  @SuppressWarnings("WeakerAccess")
-  @Inject
-  @Named(TorrentAttribute.TA_CATEGORY)
-  TorrentAttribute categoryAttribute;
-
-  @SuppressWarnings("WeakerAccess")
-  @Inject
-  @Named(VuzeManagerPlugin.TA_COMPLETED_TIME)
-  TorrentAttribute completedTimeAttribute;
-
-  @Inject
   VuzeManagerPlugin.Factory factory;
 
+  @Inject
+  private Set<Rule> rules;
   private Table table;
   private ToolItem remove;
   private TableColumn qualifier;
   private TableColumn action;
   private TableColumn arg;
-
-  Set<Rule> rules;
 
   @Inject
   public RulesView() {
@@ -108,8 +84,6 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
   }
 
   private void initialize(Composite root) {
-
-    rules = getRulesFromConfig(config);
     final Display display = getDisplay();
 
     root.setLayout(new GridLayout());
@@ -173,13 +147,6 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
     table.addListener (SWT.MouseDoubleClick, event -> handleItemDoubleClick());
 
     populateTable();
-
-    final DownloadEventNotifier eventNotifier = downloadManager.getGlobalDownloadEventNotifier();
-    eventNotifier.addCompletionListener(this);
-  }
-
-  public static HashSet<Rule> getRulesFromConfig(Config config) {
-    return config.getTyped(RULES, RULES_TYPE, new HashSet<>());
   }
 
   private void setColumnWidth(TableColumn column, String name) {
@@ -191,28 +158,11 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
 
   private void delete() {
     imageRepository.unLoadImages();
+    config.set(VuzeManagerPlugin.RULES, rules);
     config.set(QUALIFIER_WIDTH, qualifier.getWidth());
     config.set(ACTION_WIDTH, action.getWidth());
     config.set(ARG_WIDTH, arg.getWidth());
     config.save();
-  }
-
-  @Override
-  public void onCompletion(Download download) {
-    download.setLongAttribute(completedTimeAttribute, System.currentTimeMillis());
-
-    final String category = download.getAttribute(categoryAttribute);
-    if (category == null) {
-      return;
-    }
-    rules.stream()
-        .filter(rule -> rule.getAction() == Rule.Action.FORCE_SEED && rule.getMatcher().matches(category))
-        .forEach(rule -> forceStart(download));
-  }
-
-  private void forceStart(Download download) {
-    logger.log("Download %s force started.", download);
-    download.setForceStart(true);
   }
 
   private void handleItemDoubleClick() {
@@ -238,8 +188,6 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
       rules.remove(oldConfig);
     }
     rules.add(newConfig);
-    config.set(RULES, rules);
-    config.save();
     populateTable();
   }
 
@@ -248,8 +196,6 @@ public class RulesView implements UISWTViewEventListener, DownloadCompletionList
     if(items.length == 1){
       final Rule rule = (Rule) items[0].getData();
       rules.remove(rule);
-      config.set(RULES, rules);
-      config.save();
       final int oldSelectedIndex = table.getSelectionIndex();
       populateTable();
       final int itemCount = table.getItemCount();

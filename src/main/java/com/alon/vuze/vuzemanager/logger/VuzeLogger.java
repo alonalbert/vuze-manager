@@ -1,23 +1,25 @@
 package com.alon.vuze.vuzemanager.logger;
 
+import com.alon.vuze.vuzemanager.resources.Messages;
+import org.gudy.azureus2.plugins.PluginInterface;
 import org.gudy.azureus2.plugins.logging.LoggerChannel;
 import org.gudy.azureus2.plugins.logging.LoggerChannelListener;
 import org.gudy.azureus2.plugins.ui.components.UITextArea;
 import org.gudy.azureus2.plugins.ui.components.UITextField;
 import org.gudy.azureus2.plugins.ui.model.BasicPluginViewModel;
 
-import javax.inject.Singleton;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-@Singleton
 public class VuzeLogger implements Logger , LoggerChannelListener {
   private final LoggerChannel loggerChannel;
   private final UITextArea logArea;
   private final UITextField activity;
 
-  public VuzeLogger(LoggerChannel loggerChannel, BasicPluginViewModel viewModel) {
-    this.loggerChannel = loggerChannel;
+  public VuzeLogger(PluginInterface pluginInterface, Messages messages) {
+    final String title = messages.getString("Views.plugins.VuzeManagerView.title");
+    final BasicPluginViewModel viewModel = pluginInterface.getUIManager().createBasicPluginViewModel(title);
+    loggerChannel = pluginInterface.getLogger().getTimeStampedChannel(title);
     logArea = viewModel.getLogArea();
     activity = viewModel.getActivity();
     loggerChannel.addListener(this);

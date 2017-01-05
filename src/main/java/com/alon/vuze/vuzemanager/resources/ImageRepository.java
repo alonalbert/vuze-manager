@@ -1,14 +1,15 @@
 package com.alon.vuze.vuzemanager.resources;
 
 import com.alon.vuze.vuzemanager.logger.Logger;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.widgets.Display;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 @Singleton
 public class ImageRepository {
@@ -27,7 +28,6 @@ public class ImageRepository {
   private Logger logger;
 
   private final Map<ImageResource, Image> images = new HashMap<>();
-
 
   @Inject
   public ImageRepository() {

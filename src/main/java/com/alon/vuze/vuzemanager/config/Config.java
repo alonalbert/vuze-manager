@@ -7,9 +7,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -19,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-@Singleton
 public class Config {
   private final String configFile;
   private final Logger logger;
@@ -31,8 +27,7 @@ public class Config {
 
   private final Map<String, JsonElement> map;
 
-  @Inject
-  public Config(@Named("PluginDirectory") String path, Logger logger) {
+  public Config(String path, Logger logger) {
     this.configFile = path + "/vuze-manager-options.json";
     this.logger = logger;
     map = load();

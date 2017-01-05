@@ -3,40 +3,44 @@ package com.alon.vuze.vuzemanager;
 import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.utils.TimeUtils;
-import com.google.inject.Inject;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 
+import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
+
+@Singleton
 class CategoryAutoDeleter {
 
-  @SuppressWarnings("unused")
   @Inject
   private DownloadManager downloadManager;
 
-  @SuppressWarnings("unused")
   @Inject
   private Logger logger;
 
-  @SuppressWarnings("unused")
   @Inject
   private Config config;
 
-  @SuppressWarnings("unused")
   @Inject
   @Named(TorrentAttribute.TA_CATEGORY)
   private TorrentAttribute categoryAttribute;
 
-  @SuppressWarnings("unused")
   @Inject
-  @Named(VuzeManagerPlugin.TA_COMPLETED_TIME)
+  @Named(TA_COMPLETED_TIME)
   private TorrentAttribute completedTimeAttribute;
+
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+  @Inject
+  private Set<Rule> rules;
 
   @Inject
   public CategoryAutoDeleter() {
@@ -45,15 +49,15 @@ class CategoryAutoDeleter {
   void autoDeleteDownloads() {
     try {
       logger.log("Checking downloads...");
-      final List<Rule> rules = RulesView.getRulesFromConfig(config).stream()
+      final List<Rule> relevantRules = rules.stream()
           .filter(category -> category.getAction() == Rule.Action.CATEGORY_AUTO_DELETE)
           .collect(Collectors.toList());
 
-      logger.log("Found %d relevant rules", rules.size());
-      if (rules.size() > 0) {
+      logger.log("Found %d relevant rules", relevantRules.size());
+      if (relevantRules.size() > 0) {
         Arrays.stream(downloadManager.getDownloads())
             .filter(Download::isComplete)
-            .forEach(download -> checkDownload(download, rules, System.currentTimeMillis()));
+            .forEach(download -> checkDownload(download, relevantRules, System.currentTimeMillis()));
       }
       logger.log("Done!!!");
     } catch (Exception e) {

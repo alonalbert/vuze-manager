@@ -5,7 +5,6 @@ import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.plex.Directory;
 import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.resources.Messages;
-import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -23,6 +22,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 import org.xml.sax.SAXException;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;

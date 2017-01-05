@@ -1,11 +1,9 @@
 package com.alon.vuze.vuzemanager;
 
-import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.plex.Directory;
 import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.plex.Video;
-import com.google.inject.Inject;
 import com.google.inject.Provider;
 import org.gudy.azureus2.plugins.disk.DiskManagerFileInfo;
 import org.gudy.azureus2.plugins.download.Download;
@@ -14,7 +12,9 @@ import org.gudy.azureus2.plugins.download.DownloadListener;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.download.DownloadRemovalVetoException;
 
+import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,35 +24,31 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Singleton
 class PlexAutoDeleter {
   private static final int LOG_DAYS = 30;
-  @SuppressWarnings("unused")
-  @Inject
-  Provider<PlexClient> plexClientProvider;
 
-  @SuppressWarnings("unused")
+  @Inject
+  private Provider<PlexClient> plexClientProvider;
+
+  @Inject
   @Named("VuzeRoot")
-  @Inject
-  Provider<String> vuzeRootProvider;
+  private Provider<String> vuzeRootProvider;
 
-  @SuppressWarnings("unused")
   @Named("PlexRoot")
-  @Inject
+  @Inject private
   Provider<String> plexRootProvider;
 
-  @SuppressWarnings("unused")
   @Inject
   private Logger logger;
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
-  private Config config;
+  private Set<Rule> rules;
 
-  @SuppressWarnings("unused")
   @Inject
   private DownloadManager downloadManager;
 
-  @SuppressWarnings("unused")
   @Inject
   public PlexAutoDeleter() {
   }
@@ -65,7 +61,7 @@ class PlexAutoDeleter {
       final Collection<Directory> sections = plexClient.getShowSections();
       logger.log("Found " + sections.size() + " sections");
 
-      final List<Rule> rules = RulesView.getRulesFromConfig(config).stream()
+      final List<Rule> relevantRules = rules.stream()
           .filter(category -> category.getAction() == Rule.Action.WATCHED_AUTO_DELETE)
           .collect(Collectors.toList());
 
@@ -79,7 +75,7 @@ class PlexAutoDeleter {
       logger.setStatus("Fetching episodes from Plex");
       final List<Video> watchedVideos = new ArrayList<>();
       for (Directory section : sections) {
-        final int days = getDaysIfMatch(section.getTitle(), rules);
+        final int days = getDaysIfMatch(section.getTitle(), relevantRules);
         if (days > 0) {
           logger.log("Checking section " + section.getTitle());
           final List<Video> videos = plexClient.getEpisodes(section);
