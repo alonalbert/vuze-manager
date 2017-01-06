@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.alon.vuze.vuzemanager.rules.Rule.Action.WATCHED_AUTO_DELETE;
 
@@ -55,7 +57,10 @@ public class PlexAutoDeleter {
   }
 
   public void autoDeleteDownloads() {
-    if (rules.stream().filter(rule -> rule.getAction() == WATCHED_AUTO_DELETE).count() == 0) {
+    final List<Rule> matchingRules = rules.stream()
+        .filter(rule -> rule.getAction() == WATCHED_AUTO_DELETE)
+        .collect(Collectors.toList());
+    if (matchingRules.size() == 0) {
       return;
     }
 
@@ -76,9 +81,11 @@ public class PlexAutoDeleter {
       logger.setStatus("Fetching episodes from Plex");
       final List<Video> watchedVideos = new ArrayList<>();
       for (Directory section : sections) {
-        final Rule rule = rules.findFirst(WATCHED_AUTO_DELETE, section.getTitle());
-        if (rule != null) {
-          final int days = rule.getArgAsInt();
+        final Optional<Rule> rule = matchingRules.stream().
+            filter(r -> r.getMatcher().matches(section.getTitle()))
+            .findAny();
+        if (rule.isPresent()) {
+          final int days = rule.get().getArgAsInt();
           logger.log("Checking section " + section.getTitle());
           final List<Video> videos = plexClient.getEpisodes(section);
           for (Video video : videos) {
