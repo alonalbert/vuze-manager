@@ -8,9 +8,6 @@ import org.gudy.azureus2.plugins.download.DownloadCompletionListener;
 import org.gudy.azureus2.plugins.download.DownloadException;
 import org.gudy.azureus2.plugins.download.DownloadListener;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
-import org.gudy.azureus2.plugins.ui.UIInstance;
-import org.gudy.azureus2.plugins.ui.UIManagerListener;
-import org.gudy.azureus2.ui.swt.plugins.UISWTInstance;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -21,9 +18,8 @@ import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIM
 import static com.alon.vuze.vuzemanager.rules.Rule.Action.FORCE_SEED;
 
 @Singleton
-class PluginHandler implements UIManagerListener, DownloadCompletionListener, DownloadListener {
-  private static final String VIEW_ID = "VuzeManagerView";
-  public static final String AUTO_DEST_CATEGORY = "auto-dest";
+class PluginHandler implements DownloadCompletionListener, DownloadListener {
+  private static final String AUTO_DEST_CATEGORY = "auto-dest";
 
   @Inject
   @Named(TorrentAttribute.TA_CATEGORY)
@@ -41,9 +37,6 @@ class PluginHandler implements UIManagerListener, DownloadCompletionListener, Do
   private Logger logger;
 
   @Inject
-  private MainView mainView;
-
-  @Inject
   public PluginHandler() {
   }
 
@@ -59,22 +52,9 @@ class PluginHandler implements UIManagerListener, DownloadCompletionListener, Do
     }
     final Rule rule = rules.findFirst(FORCE_SEED, category);
     if (rule != null) {
-      logger.log("Download %s force started.", download);
+      logger.log("Download %s force started.", download.getName());
       download.setForceStart(true);
     }
-  }
-
-  @Override
-  public void UIAttached(UIInstance instance) {
-    if (instance instanceof UISWTInstance) {
-      final UISWTInstance swtInstance = ((UISWTInstance) instance);
-      swtInstance.addView(UISWTInstance.VIEW_MAIN, VIEW_ID, mainView);
-      swtInstance.openMainView(VIEW_ID, mainView, null);
-    }
-  }
-
-  @Override
-  public void UIDetached(UIInstance instance) {
   }
 
   @Override

@@ -1,11 +1,14 @@
 package com.alon.vuze.vuzemanager;
 
+import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.plex.Directory;
 import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.plex.Video;
 import com.alon.vuze.vuzemanager.rules.Rule;
 import com.alon.vuze.vuzemanager.rules.Rules;
+import com.alon.vuze.vuzemanager.ui.PlexSection;
+import com.alon.vuze.vuzemanager.ui.RulesSection;
 import com.alon.vuze.vuzemanager.utils.TorrentDeleter;
 import com.google.inject.Provider;
 import org.gudy.azureus2.plugins.disk.DiskManagerFileInfo;
@@ -13,7 +16,6 @@ import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
 import java.util.ArrayList;
@@ -23,29 +25,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.FAKE_DELETE;
-import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.PLEX_ROOT;
-import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.VUZE_ROOT;
 import static com.alon.vuze.vuzemanager.rules.Rule.Action.WATCHED_AUTO_DELETE;
 
 @Singleton
-class PlexAutoDeleter {
+public class PlexAutoDeleter {
   private static final int LOG_DAYS = 30;
 
   @Inject
   private Provider<PlexClient> plexClientProvider;
-
-  @Inject
-  @Named(VUZE_ROOT)
-  private Provider<String> vuzeRootProvider;
-
-  @Named(PLEX_ROOT)
-  @Inject private
-  Provider<String> plexRootProvider;
-
-  @Named(FAKE_DELETE)
-  @Inject private
-  Provider<Boolean> fakeDeleteProvider;
 
   @Inject
   private Logger logger;
@@ -53,6 +40,10 @@ class PlexAutoDeleter {
   @Inject
   private TorrentDeleter torrentDeleter;
 
+  @Inject
+  private Config config;
+
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
   private Rules rules;
 
@@ -63,7 +54,11 @@ class PlexAutoDeleter {
   public PlexAutoDeleter() {
   }
 
-  void autoDeleteDownloads() {
+  public void autoDeleteDownloads() {
+    if (rules.stream().filter(rule -> rule.getAction() == WATCHED_AUTO_DELETE).count() == 0) {
+      return;
+    }
+
     final PlexClient plexClient = plexClientProvider.get();
     try {
       logger.log("Fetching show sections from Plex: " + plexClient);
@@ -73,8 +68,8 @@ class PlexAutoDeleter {
 
       final Set<String> filesToDelete = new HashSet<>();
       final Set<String> allFiles = new HashSet<>();
-      final String plexRoot = plexRootProvider.get();
-      final String vuzeRoot = vuzeRootProvider.get();
+      final String plexRoot = config.get(PlexSection.PLEX_ROOT, "");
+      final String vuzeRoot = config.get(PlexSection.VUZE_ROOT, "");
 
       final long now = System.currentTimeMillis();
       final int[] byDay = new int[LOG_DAYS];
@@ -175,7 +170,7 @@ class PlexAutoDeleter {
           continue;
         }
         logger.log("Deleting %s", file);
-        if (fakeDeleteProvider.get()) {
+        if (config.get(RulesSection.FAKE_DELETE, false)) {
           logger.log("Not actually deleted - see Settings");
         } else {
           final boolean deleted = file.delete();

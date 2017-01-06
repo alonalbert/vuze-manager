@@ -19,7 +19,7 @@ import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIM
 import static com.alon.vuze.vuzemanager.rules.Rule.Action.CATEGORY_AUTO_DELETE;
 
 @Singleton
-class CategoryAutoDeleter {
+public class CategoryAutoDeleter {
 
   @Inject
   private DownloadManager downloadManager;
@@ -38,6 +38,7 @@ class CategoryAutoDeleter {
   @Named(TA_COMPLETED_TIME)
   private TorrentAttribute completedTimeAttribute;
 
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
   private Rules rules;
 
@@ -45,7 +46,10 @@ class CategoryAutoDeleter {
   public CategoryAutoDeleter() {
   }
 
-  void autoDeleteDownloads() {
+  public void autoDeleteDownloads() {
+    if (rules.stream().filter(rule -> rule.getAction() == CATEGORY_AUTO_DELETE).count() == 0) {
+      return;
+    }
     try {
       logger.log("Checking downloads...");
       Arrays.stream(downloadManager.getDownloads())

@@ -80,6 +80,12 @@ public class Rules implements Collection<Rule> {
         .findFirst().orElse(null);
   }
 
+  public long getCount(Action action) {
+    return rules.stream().filter(
+        rule -> rule.getAction() == action)
+        .count();
+  }
+
   @Override
   public int size() {
     return rules.size();
