@@ -36,8 +36,10 @@ public class ConfigView extends Composite implements ConfigSection {
   }
 
   public void save() {
-    for (ConfigSection section : sections) {
-      section.save();
+    if (!isDisposed()) {
+      for (ConfigSection section : sections) {
+        section.save();
+      }
     }
     config.save();
   }
