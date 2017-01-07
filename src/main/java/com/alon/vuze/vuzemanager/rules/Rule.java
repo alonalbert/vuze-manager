@@ -36,6 +36,7 @@ public class Rule {
     return qualifier;
   }
 
+  @SuppressWarnings("WeakerAccess")
   public WildcardMatcher getMatcher() {
     return matcher;
   }

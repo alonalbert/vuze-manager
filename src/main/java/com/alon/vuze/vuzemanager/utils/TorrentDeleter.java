@@ -1,17 +1,15 @@
 package com.alon.vuze.vuzemanager.utils;
 
+import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
-import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.alon.vuze.vuzemanager.ui.RulesSection;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadException;
 import org.gudy.azureus2.plugins.download.DownloadListener;
 import org.gudy.azureus2.plugins.download.DownloadRemovalVetoException;
 
-import javax.inject.Named;
+import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import static com.alon.vuze.vuzemanager.VuzeManagerPlugin.FAKE_DELETE;
 
 
 @Singleton
@@ -20,11 +18,8 @@ public class TorrentDeleter {
   @Inject
   private Logger logger;
 
-  @Named(FAKE_DELETE)
-  @javax.inject.Inject
-  private
-  Provider<Boolean> fakeDeleteProvider;
-
+  @Inject
+  private Config config;
 
   @Inject
   public TorrentDeleter() {
@@ -32,7 +27,7 @@ public class TorrentDeleter {
 
   public void deleteDownload(Download download) {
     logger.log("Deleting %s", download.getName());
-    if (fakeDeleteProvider.get()) {
+    if (config.get(RulesSection.FAKE_DELETE, false)) {
       logger.log("Not actually deleted - see Settings");
       return;
     }

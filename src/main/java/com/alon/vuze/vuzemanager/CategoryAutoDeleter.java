@@ -13,13 +13,16 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
 import static com.alon.vuze.vuzemanager.rules.Rule.Action.CATEGORY_AUTO_DELETE;
 
 @Singleton
-class CategoryAutoDeleter {
+public class CategoryAutoDeleter {
 
   @Inject
   private DownloadManager downloadManager;
@@ -38,6 +41,7 @@ class CategoryAutoDeleter {
   @Named(TA_COMPLETED_TIME)
   private TorrentAttribute completedTimeAttribute;
 
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
   private Rules rules;
 
@@ -45,31 +49,39 @@ class CategoryAutoDeleter {
   public CategoryAutoDeleter() {
   }
 
-  void autoDeleteDownloads() {
+  public void autoDeleteDownloads() {
+    final List<Rule> matchingRules = rules.stream()
+        .filter(rule -> rule.getAction() == CATEGORY_AUTO_DELETE)
+        .collect(Collectors.toList());
+    if (matchingRules.size() == 0) {
+      return;
+    }
     try {
       logger.log("Checking downloads...");
       Arrays.stream(downloadManager.getDownloads())
           .filter(Download::isComplete)
-          .forEach(download -> checkDownload(download, System.currentTimeMillis()));
+          .forEach(download -> checkDownload(download, matchingRules, System.currentTimeMillis()));
       logger.log("Done!!!");
     } catch (Exception e) {
       logger.log(e, "Unexpected error while checking downloads");
     }
   }
 
-  private void checkDownload(Download download, long now) {
+  private void checkDownload(Download download, List<Rule> matchingRules, long now) {
     final long completedTime = download.getLongAttribute(completedTimeAttribute);
     if (completedTime == 0) {
       download.setLongAttribute(completedTimeAttribute, now);
       return;
     }
     final String category = download.getAttribute(categoryAttribute);
-    final Rule rule = rules.findFirst(CATEGORY_AUTO_DELETE, category);
-    if (rule != null) {
+    final Optional<Rule> rule = matchingRules.stream().
+        filter(r -> r.getMatcher().matches(category))
+        .findAny();
+    if (rule.isPresent()) {
       final long duration = now - completedTime;
       final String durationString = TimeUtils.formatDuration(duration);
       logger.log(String.format("%s age is %s", download.getName(), durationString));
-      if (TimeUnit.MILLISECONDS.toDays(duration) >= rule.getArgAsInt()) {
+      if (TimeUnit.MILLISECONDS.toDays(duration) >= rule.get().getArgAsInt()) {
         logger.log(String.format("Deleting %s after %s", durationString, download.getName()));
         torrentDeleter.deleteDownload(download);
       }

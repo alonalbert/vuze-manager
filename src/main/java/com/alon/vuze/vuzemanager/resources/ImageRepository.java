@@ -6,12 +6,10 @@ import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.widgets.Display;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-@Singleton
 public class ImageRepository {
   public enum ImageResource {
     ADD("add.png"),
@@ -30,7 +28,7 @@ public class ImageRepository {
   private final Map<ImageResource, Image> images = new HashMap<>();
 
   @Inject
-  public ImageRepository() {
+  private ImageRepository() {
   }
 
   public Image getImage(Display display, ImageResource imageResource) {
