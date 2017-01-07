@@ -19,6 +19,6 @@ public class WildcardMatcher {
   }
 
   public boolean matches(CharSequence input) {
-    return pattern.matcher(input).matches();
+    return input != null && pattern.matcher(input).matches();
   }
 }
