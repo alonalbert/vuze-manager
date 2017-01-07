@@ -19,7 +19,7 @@ public class VuzeLogger implements Logger , LoggerChannelListener {
   public VuzeLogger(PluginInterface pluginInterface, Messages messages) {
     final String title = messages.getString("Views.plugins.VuzeManagerView.title");
     final BasicPluginViewModel viewModel = pluginInterface.getUIManager().createBasicPluginViewModel(title);
-    loggerChannel = pluginInterface.getLogger().getTimeStampedChannel(title);
+    loggerChannel = pluginInterface.getLogger().getChannel(title);
     logArea = viewModel.getLogArea();
     activity = viewModel.getActivity();
     loggerChannel.addListener(this);
@@ -42,14 +42,18 @@ public class VuzeLogger implements Logger , LoggerChannelListener {
 
   @Override
   public void messageLogged(int type, String content) {
-    logArea.appendText(content + "\n");
+    writeLog(content);
   }
 
   @Override
   public void messageLogged(String str, Throwable error) {
-    logArea.appendText(str + "\n");
+    writeLog(str);
     final StringWriter writer = new StringWriter();
     error.printStackTrace(new PrintWriter(writer));
-    logArea.appendText(writer.toString() + "\n");
+    writeLog(writer.toString());
+  }
+
+  private void writeLog(String text) {
+    logArea.appendText(String.format("[%1$tD %1$tT]    %2$s\n", System.currentTimeMillis(), text));
   }
 }
