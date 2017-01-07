@@ -2,7 +2,7 @@ package com.alon.vuze.vuzemanager.ui;
 
 import com.alon.vuze.vuzemanager.CategoryAutoDeleter;
 import com.alon.vuze.vuzemanager.PlexAutoDeleter;
-import com.alon.vuze.vuzemanager.VuzeManagerPlugin;
+import com.alon.vuze.vuzemanager.ViewFactory;
 import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.resources.ImageRepository;
@@ -57,7 +57,7 @@ public class RulesSection extends Composite implements ConfigSection {
   private ImageRepository imageRepository;
 
   @Inject
-  private VuzeManagerPlugin.Factory factory;
+  private ViewFactory factory;
 
   @Inject
   private Messages messages;

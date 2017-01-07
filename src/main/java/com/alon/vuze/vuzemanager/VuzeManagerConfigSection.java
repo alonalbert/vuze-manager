@@ -11,7 +11,7 @@ import javax.inject.Singleton;
 @Singleton
 class VuzeManagerConfigSection implements UISWTConfigSection {
   @javax.inject.Inject
-  private VuzeManagerPlugin.Factory factory;
+  private ViewFactory factory;
   private ConfigView configView;
 
   @Inject

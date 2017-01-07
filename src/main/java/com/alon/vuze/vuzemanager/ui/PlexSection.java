@@ -5,6 +5,7 @@ import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.utils.CompositeBuilder;
 import com.alon.vuze.vuzemanager.utils.GridDataBuilder;
 import com.alon.vuze.vuzemanager.utils.NetworkUtils;
+import com.alon.vuze.vuzemanager.utils.UiUtils;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.eclipse.swt.SWT;
@@ -17,28 +18,31 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 
+import javax.inject.Inject;
+
 public class PlexSection extends Composite implements ConfigSection {
 
   public static final String PLEX_HOST = "plexHost";
   public static final String PLEX_PORT = "plexPort";
   public static final String PLEX_ROOT = "plexRoot";
   public static final String VUZE_ROOT = "vuzeRoot";
+
+  @Inject
+  private Config config;
+
+  @Inject
+  private Messages messages;
+
   private final Group group;
-  private final Config config;
-  private final Messages messages;
+
   private Text host;
   private Spinner port;
   private Text plexRoot;
   private Text vuzeRoot;
 
   @AssistedInject
-  public PlexSection(
-      @Assisted Composite parent,
-      Config config,
-      Messages messages) {
+  public PlexSection(@Assisted Composite parent) {
     super(parent, SWT.NONE);
-    this.config = config;
-    this.messages = messages;
 
     setLayout(new GridLayout());
     setLayoutData(new GridDataBuilder(GridData.FILL, GridData.CENTER, false, false).build());
@@ -87,6 +91,7 @@ public class PlexSection extends Composite implements ConfigSection {
     final Button plexRootBrowse = new Button(plexRootWrapper, SWT.PUSH);
     plexRootBrowse.setText("...");
     plexRootBrowse.setLayoutData(new GridDataBuilder(GridData.FILL, GridData.FILL, false, false).build());
+    plexRootBrowse.addListener(SWT.Selection, event -> onBrowse(plexRoot));
 
     final Label vuzeRootLabel = new Label(group , SWT.NONE);
 
@@ -106,7 +111,13 @@ public class PlexSection extends Composite implements ConfigSection {
     final Button vuzeRootBrowse = new Button(vuzeRootWrapper , SWT.PUSH);
     vuzeRootBrowse.setText("...");
     vuzeRootBrowse.setLayoutData(new GridDataBuilder(GridData.END, GridData.CENTER, false, false).build());
+    vuzeRootBrowse.addListener(SWT.Selection, event -> onBrowse(vuzeRoot));
+
     save();
+  }
+
+  private void onBrowse(Text target) {
+    UiUtils.selectDirectory(getShell(), "Select directory", "Select directory", target);
   }
 
   @Override

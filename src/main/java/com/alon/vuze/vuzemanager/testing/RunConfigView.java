@@ -1,6 +1,6 @@
 package com.alon.vuze.vuzemanager.testing;
 
-import com.alon.vuze.vuzemanager.VuzeManagerPlugin;
+import com.alon.vuze.vuzemanager.ViewFactory;
 import com.alon.vuze.vuzemanager.config.Config;
 import com.alon.vuze.vuzemanager.logger.DebugLogger;
 import com.alon.vuze.vuzemanager.logger.Logger;
@@ -27,7 +27,7 @@ import java.io.IOException;
 import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
 
 @SuppressWarnings("ALL")
-class Main {
+class RunConfigView {
 
   public static void main(String[] args) throws IOException {
     final DebugLogger logger = new DebugLogger();
@@ -50,7 +50,7 @@ class Main {
         }
 
         bind(DownloadManager.class).to(FakeDownloadManager.class);
-        install(new FactoryModuleBuilder().build(VuzeManagerPlugin.Factory.class));
+        install(new FactoryModuleBuilder().build(ViewFactory.class));
 
         bind(TorrentAttribute.class).annotatedWith(Names.named(TA_COMPLETED_TIME))
             .toInstance(new MockTorrentAttribute());
@@ -63,7 +63,7 @@ class Main {
     shell.setLayout(new GridLayout());
     shell.setSize(new Point(800, 600));
 
-    final ConfigView view = injector.getInstance(VuzeManagerPlugin.Factory.class).createConfigView(shell);
+    final ConfigView view = injector.getInstance(ViewFactory.class).createConfigView(shell);
     view.addDisposeListener(e -> view.save());
     shell.pack();
     shell.open();

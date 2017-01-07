@@ -6,10 +6,7 @@ import com.alon.vuze.vuzemanager.logger.VuzeLogger;
 import com.alon.vuze.vuzemanager.plex.PlexClient;
 import com.alon.vuze.vuzemanager.resources.Messages;
 import com.alon.vuze.vuzemanager.resources.VuzeMessages;
-import com.alon.vuze.vuzemanager.ui.ConfigView;
 import com.alon.vuze.vuzemanager.ui.PlexSection;
-import com.alon.vuze.vuzemanager.ui.RuleDialog;
-import com.alon.vuze.vuzemanager.ui.RulesSection;
 import com.alon.vuze.vuzemanager.utils.NetworkUtils;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -17,8 +14,6 @@ import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.gudy.azureus2.plugins.Plugin;
 import org.gudy.azureus2.plugins.PluginException;
 import org.gudy.azureus2.plugins.PluginInterface;
@@ -31,8 +26,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
 
 @SuppressWarnings("WeakerAccess")
 public class VuzeManagerPlugin extends AbstractModule implements Plugin {
@@ -65,6 +58,8 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
     //noinspection deprecation
     pluginInterface.addConfigSection(injector.getInstance(VuzeManagerConfigSection.class));
 
+    downloadManager.addListener(pluginHandler);
+    downloadManager.addDownloadWillBeAddedListener(pluginHandler);
     final DownloadEventNotifier eventNotifier = downloadManager.getGlobalDownloadEventNotifier();
     eventNotifier.addCompletionListener(pluginHandler);
     eventNotifier.addListener(pluginHandler);
@@ -76,30 +71,23 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
   }
 
 
-  public interface Factory {
-    ConfigView createConfigView(Composite parent);
-
-    RulesSection createSectionView(Composite parent);
-
-    PlexSection createPlexSection(Composite parent);
-
-    RuleDialog createRunDialog(Display display, RuleDialog.OnOkListener onOkListener);
-  }
-
   @Override
   protected void configure() {
     bind(DownloadManager.class).toInstance(downloadManager);
+    bind(TorrentManager.class).toInstance(torrentManager);
     bind(Config.class).toInstance(config);
     bind(Logger.class).toInstance(logger);
     bind(Messages.class).toInstance(messages);
     install(new FactoryModuleBuilder()
-        .build(Factory.class));
+        .build(ViewFactory.class));
     for (TorrentAttribute torrentAttribute : torrentManager.getDefinedAttributes()) {
       bind(TorrentAttribute.class).annotatedWith(Names.named(torrentAttribute.getName()))
           .toInstance(torrentAttribute);
     }
-    bind(TorrentAttribute.class).annotatedWith(Names.named(TA_COMPLETED_TIME))
-        .toInstance(torrentManager.getPluginAttribute(TA_COMPLETED_TIME));
+    for (String attribute : PluginTorrentAttributes.attributes) {
+      bind(TorrentAttribute.class).annotatedWith(Names.named(attribute))
+          .toInstance(torrentManager.getPluginAttribute(attribute));
+    }
   }
 
   @Provides

@@ -209,8 +209,8 @@ public class RuleDialog {
     }
     dlg.setFilterPath(filter);
 
-    dlg.setText(messages.getString("vuzeManager.rulesDialog.directory.browse.title"));
-    dlg.setMessage(messages.getString("vuzeManager.rulesDialog.directory.browse.message"));
+    dlg.setText(messages.getString("vuzeManager.directory.browse.title"));
+    dlg.setMessage(messages.getString("vuzeManager.directory.browse.message"));
     final String dir = dlg.open();
     if (dir != null) {
       directoryCombo.setText(dir);
