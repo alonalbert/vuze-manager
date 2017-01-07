@@ -62,7 +62,7 @@ public class ProperSection extends Composite implements ConfigSection {
     categoryLabel.setText(messages.getString("vuzeManager.config.proper.category"));
     categoryLabel.setLayoutData(new GridDataBuilder().build());
     category = new Text(group, SWT.BORDER);
-    category.setText(config.get(PROPER_DIRECTORY, ""));
+    category.setText(config.get(PROPER_CATEGORY, ""));
     category.setLayoutData(new GridDataBuilder().setWidthHint(100).build());
 
   }
