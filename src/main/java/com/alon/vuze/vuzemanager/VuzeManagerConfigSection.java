@@ -41,7 +41,9 @@ class VuzeManagerConfigSection implements UISWTConfigSection {
 
   @Override
   public void configSectionSave() {
-    configView.save();
+    if (configView != null) {
+      configView.save();
+    }
   }
 
   @Override
