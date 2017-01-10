@@ -11,7 +11,6 @@ import org.gudy.azureus2.plugins.download.DownloadException;
 import org.gudy.azureus2.plugins.download.DownloadListener;
 import org.gudy.azureus2.plugins.download.DownloadManager;
 import org.gudy.azureus2.plugins.download.DownloadManagerListener;
-import org.gudy.azureus2.plugins.download.DownloadWillBeAddedListener;
 import org.gudy.azureus2.plugins.torrent.TorrentAttribute;
 
 import javax.inject.Inject;
@@ -20,11 +19,10 @@ import javax.inject.Singleton;
 import java.io.File;
 
 import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
-import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_REPLACED_BY_PROPER;
 import static com.alon.vuze.vuzemanager.rules.Rule.Action.FORCE_SEED;
 
 @Singleton
-class PluginHandler implements DownloadCompletionListener, DownloadListener, DownloadManagerListener, DownloadWillBeAddedListener {
+class PluginHandler implements DownloadCompletionListener, DownloadListener, DownloadManagerListener {
   private static final String AUTO_DEST_CATEGORY = "auto-dest";
 
   @Inject
@@ -34,10 +32,6 @@ class PluginHandler implements DownloadCompletionListener, DownloadListener, Dow
   @Inject
   @Named(TA_COMPLETED_TIME)
   private TorrentAttribute completedTimeAttribute;
-
-  @Inject
-  @Named(TA_REPLACED_BY_PROPER)
-  private TorrentAttribute replacedByProperAttribute;
 
   @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
@@ -167,13 +161,5 @@ class PluginHandler implements DownloadCompletionListener, DownloadListener, Dow
     if (download.getLongAttribute(completedTimeAttribute) == 0) {
       download.setLongAttribute(completedTimeAttribute, System.currentTimeMillis());
     }
-  }
-
-  @Override
-  public void initialised(Download download) {
-    logger.log("About to be added: name=%s category: %s dir'%s",
-        download.getName(),
-        download.getAttribute(categoryAttribute),
-        download.getSavePath());
   }
 }
