@@ -57,17 +57,24 @@ public class CategoryAutoDeleter {
       return;
     }
     try {
+      DeletionStats stats = new DeletionStats(30);
       logger.log("Checking downloads...");
       Arrays.stream(downloadManager.getDownloads())
           .filter(Download::isComplete)
-          .forEach(download -> checkDownload(download, matchingRules, System.currentTimeMillis()));
+          .forEach(download -> checkDownload(download, matchingRules, System.currentTimeMillis(), stats));
+      for (int i = 0; i < 30; i++) {
+        if (stats.getNum(i) > 0) {
+          logger.log(String.format("%d GB in %d downloads will be deleted in %d day",
+              stats.getNumGb(i), stats.getNum(i), i));
+        }
+      }
       logger.log("Done!!!");
     } catch (Exception e) {
       logger.log(e, "Unexpected error while checking downloads");
     }
   }
 
-  private void checkDownload(Download download, List<Rule> matchingRules, long now) {
+  private void checkDownload(Download download, List<Rule> matchingRules, long now, DeletionStats stats) {
     final long completedTime = download.getLongAttribute(completedTimeAttribute);
     if (completedTime == 0) {
       download.setLongAttribute(completedTimeAttribute, now);
@@ -80,10 +87,12 @@ public class CategoryAutoDeleter {
     if (rule.isPresent()) {
       final long duration = now - completedTime;
       final String durationString = TimeUtils.formatDuration(duration);
-      logger.log(String.format("%s age is %s", download.getName(), durationString));
-      if (TimeUnit.MILLISECONDS.toDays(duration) >= rule.get().getArgAsInt()) {
-        logger.log(String.format("Deleting %s after %s", durationString, download.getName()));
+      int daysTillDelete = (int) (rule.get().getArgAsInt() - TimeUnit.MILLISECONDS.toDays(duration));
+      if (daysTillDelete <= 0) {
+        logger.log(String.format("Deleting %s after %s", download.getName(), durationString));
         torrentDeleter.deleteDownload(download);
+      } else {
+        stats.add(daysTillDelete, download.getTorrentSize());
       }
     }
   }

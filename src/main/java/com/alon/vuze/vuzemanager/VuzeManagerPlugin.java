@@ -59,7 +59,6 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
     pluginInterface.addConfigSection(injector.getInstance(VuzeManagerConfigSection.class));
 
     downloadManager.addListener(pluginHandler);
-    downloadManager.addDownloadWillBeAddedListener(pluginHandler);
     final DownloadEventNotifier eventNotifier = downloadManager.getGlobalDownloadEventNotifier();
     eventNotifier.addCompletionListener(pluginHandler);
     eventNotifier.addListener(pluginHandler);

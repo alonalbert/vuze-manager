@@ -77,7 +77,7 @@ public class PlexAutoDeleter {
       final String vuzeRoot = config.get(PlexSection.VUZE_ROOT, "");
 
       final long now = System.currentTimeMillis();
-      final int[] byDay = new int[LOG_DAYS];
+      final DeletionStats stats = new DeletionStats(LOG_DAYS);
       logger.setStatus("Fetching episodes from Plex");
       final List<Video> watchedVideos = new ArrayList<>();
       for (Directory section : sections) {
@@ -99,17 +99,13 @@ public class PlexAutoDeleter {
               final long lastViewedAt = video.getLastViewedAt();
               final long durationMs = now - lastViewedAt;
               final int age = (int) TimeUnit.MILLISECONDS.toDays(durationMs);
-//              for (String file : normalizedFiles) {
-//                logger.log("Video %s watched %s ago", new File(file).getName(), TimeUtils.formatDuration(durationMs));
-//              }
               if (age >= days) {
                 filesToDelete.addAll(normalizedFiles);
               } else {
                 final int daysTillDelete = days - age - 1;
                 if (daysTillDelete < LOG_DAYS) {
-                  byDay[daysTillDelete]++;
+                  normalizedFiles.forEach(filename -> stats.add(daysTillDelete, new File(filename).length()));
                 }
-
               }
             }
           }
@@ -123,12 +119,14 @@ public class PlexAutoDeleter {
       if (filesToDelete.size() > 0) {
         logger.log(String.format("%d episodes will be deleted now", filesToDelete.size()));
       }
-      if (byDay[0] > 0) {
-        logger.log(String.format("%d episodes will be deleted in 1 day", byDay[0]));
+      if (stats.getNum(0) > 0) {
+        logger.log(String.format("%d GB in %d files will be deleted in 1 day",
+            stats.getNum(0), stats.getNumGb(0)));
       }
       for (int i = 1; i < LOG_DAYS; i++) {
-        if (byDay[i] > 0) {
-          logger.log(String.format("%d episodes will be deleted in %d days", byDay[i], i + 1));
+        if (stats.getNum(i) > 0) {
+          logger.log(String.format("%d GB in %d files will be deleted in %d day",
+              stats.getNumGb(i), stats.getNum(i), i));
         }
       }
 
