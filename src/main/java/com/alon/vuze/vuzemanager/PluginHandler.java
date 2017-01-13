@@ -19,6 +19,7 @@ import javax.inject.Singleton;
 import java.io.File;
 
 import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_COMPLETED_TIME;
+import static com.alon.vuze.vuzemanager.PluginTorrentAttributes.TA_SORTED;
 import static com.alon.vuze.vuzemanager.rules.Rule.Action.FORCE_SEED;
 
 @Singleton
@@ -32,6 +33,10 @@ class PluginHandler implements DownloadCompletionListener, DownloadListener, Dow
   @Inject
   @Named(TA_COMPLETED_TIME)
   private TorrentAttribute completedTimeAttribute;
+
+  @Inject
+  @Named(TA_SORTED)
+  private TorrentAttribute sortedAttribute;
 
   @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   @Inject
@@ -62,10 +67,37 @@ class PluginHandler implements DownloadCompletionListener, DownloadListener, Dow
   }
 
   private void maybeAutoMove(Download download) {
-    final String downloadName = download.getName();
-    if (downloadName.startsWith("Metadata download for ")) {
+    if (download.getName().startsWith("Metadata download for ")) {
       return;
     }
+    handleAutoDestination(download);
+    handleSortTvShows(download);
+
+  }
+
+  private void handleSortTvShows(Download download) {
+    final TvEpisode episode = TvEpisode.create(download);
+    if (episode == null) {
+      return;
+    }
+    final String savePath = download.getSavePath();
+    final String savedPath = new File(savePath).getParent();
+    final String sorted = download.getAttribute(sortedAttribute);
+    if (savedPath.equals(sorted)) {
+      return;
+    }
+    logger.log("Original save path: %s", savePath);
+
+    final String destination = String.format("%s/%s/S%02d", savedPath, episode.getName(), episode.getSeason());
+    logger.log("Sorting %s into %s", download.getName(), destination);
+    final boolean moved = moveDownload(download, destination);
+    if (moved) {
+      download.setAttribute(sortedAttribute, destination);
+    }
+  }
+
+  private void handleAutoDestination(Download download) {
+    String downloadName = download.getName();
     final String category = download.getAttribute(categoryAttribute);
 
     if (category != null && !category.isEmpty() ) {
@@ -77,24 +109,38 @@ class PluginHandler implements DownloadCompletionListener, DownloadListener, Dow
     }
     final String destination = rule.getArg();
     logger.log("Moving %s to %s", downloadName, destination);
+    final boolean moved = moveDownload(download, destination);
+    if (moved) {
+      download.setAttribute(categoryAttribute, AUTO_DEST_CATEGORY);
+    }
+  }
+
+  private boolean moveDownload(Download download, String destination) {
+    final String savePath = new File(download.getSavePath()).getParent();
+    final String name = download.getName();
+    if (savePath.equals(destination)) {
+      logger.log("%s is already in %s. Not moving it", name, destination);
+      return false;
+    }
     if (!download.canMoveDataFiles()) {
-      logger.log("Download data files can't be moved: %s", downloadName);
-      return;
+      logger.log("Download data files can't be moved: %s", name);
+      return false;
     }
     final File file = new File(destination);
     if (!file.isDirectory()) {
       if (file.exists()) {
         logger.log("%d exists as a file. Can't move download", destination);
-        return;
+        return false;
       }
       file.mkdirs();
     }
     try {
       download.moveDataFiles(file);
-      download.setAttribute(categoryAttribute, AUTO_DEST_CATEGORY);
+      return true;
     } catch (DownloadException e) {
       logger.log(e, "Could not move download");
     }
+    return false;
   }
 
   @Override

@@ -13,20 +13,26 @@ public class TvEpisode {
   private final int episode;
   private final boolean proper;
 
-  private static final Pattern seriesPattern = Pattern.compile("^(?<series>.*)\\.s(?<season>\\d+)e(?<episode>\\d+)");
-  private static final Pattern propperPattern = Pattern.compile("\\bproper\\b");
+  private static final Pattern[] seriesPattern = new Pattern[] {
+      Pattern.compile("^(?<series>.*)\\.s(?<season>\\d+)e(?<episode>\\d+)", Pattern.CASE_INSENSITIVE),
+      Pattern.compile("^(?<series>.*)\\.(?<season>\\d\\d\\d\\d)\\.(?<episode>\\d\\d\\.\\d\\d).*HDTV", Pattern.CASE_INSENSITIVE),
+  };
+  private static final Pattern propperPattern = Pattern.compile("\\bproper\\b", Pattern.CASE_INSENSITIVE);
 
   public static TvEpisode create(Download download) {
-    final String name = download.getName().toLowerCase();
-    final Matcher matcher = seriesPattern.matcher(name);
-    if (!matcher.find()) {
-      return null;
+    final String name = download.getName();
+    for (Pattern pattern : seriesPattern) {
+      final Matcher matcher = pattern.matcher(name);
+      if (!matcher.find()) {
+        continue;
+      }
+      final String series = matcher.group("series").replace('.', ' ');
+      final int season = Integer.parseInt(matcher.group("season"));
+      final int episode = Integer.parseInt(matcher.group("episode").replace(".", ""));
+      final boolean proper = checkIfProper(name, download.getTorrent().getFiles());
+      return new TvEpisode(series, season, episode, proper);
     }
-    final String series = matcher.group("series").replace('.', ' ');
-    final int season = Integer.parseInt(matcher.group("season"));
-    final int episode = Integer.parseInt(matcher.group("episode"));
-    final boolean proper = checkIfProper(name, download.getTorrent().getFiles());
-    return new TvEpisode(series, season, episode, proper);
+    return null;
   }
 
   private static boolean checkIfProper(String name, TorrentFile[] files) {
@@ -58,7 +64,19 @@ public class TvEpisode {
     return proper;
   }
 
+  public String getName() {
+    return name;
+  }
+
+  public int getSeason() {
+    return season;
+  }
+
+  public int getEpisode() {
+    return episode;
+  }
+
   public boolean isSameEpisode(TvEpisode other) {
-    return other != null && name.equals(other.name) && season == other.season && episode == other.episode;
+    return other != null && name.equalsIgnoreCase(other.name) && season == other.season && episode == other.episode;
   }
 }
