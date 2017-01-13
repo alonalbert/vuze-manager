@@ -1,6 +1,7 @@
 package com.alon.vuze.vuzemanager;
 
 
+import com.alon.vuze.vuzemanager.utils.WordUtils;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.torrent.TorrentFile;
 
@@ -26,7 +27,7 @@ public class TvEpisode {
       if (!matcher.find()) {
         continue;
       }
-      final String series = matcher.group("series").replace('.', ' ');
+      final String series = WordUtils.titleCase(matcher.group("series").replace('.', ' '));
       final int season = Integer.parseInt(matcher.group("season"));
       final int episode = Integer.parseInt(matcher.group("episode").replace(".", ""));
       final boolean proper = checkIfProper(name, download.getTorrent().getFiles());
