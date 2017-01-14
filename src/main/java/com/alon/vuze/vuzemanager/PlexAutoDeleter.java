@@ -66,6 +66,8 @@ public class PlexAutoDeleter {
 
     final PlexClient plexClient = plexClientProvider.get();
     try {
+      logger.log("");
+      logger.log("\n============== Plex Auto Delete Begin ==============");
       logger.log("Fetching show sections from Plex: " + plexClient);
       logger.setStatus("Fetching sections from Plex");
       final Collection<Directory> sections = plexClient.getShowSections();
@@ -132,7 +134,8 @@ public class PlexAutoDeleter {
 
       checkTorrents(filesToDelete, allFiles, vuzeRoot);
       checkOrphans(filesToDelete, vuzeRoot);
-      logger.log("Done!!!");
+      logger.log("============== Plex Auto Delete End ==============\n");
+      logger.log("");
     } catch (Throwable e) {
       logger.log(e, "Error");
     } finally {

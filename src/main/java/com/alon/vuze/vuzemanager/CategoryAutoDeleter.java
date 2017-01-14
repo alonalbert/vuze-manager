@@ -58,6 +58,8 @@ public class CategoryAutoDeleter {
     }
     try {
       DeletionStats stats = new DeletionStats(30);
+      logger.log("");
+      logger.log("============== Category Auto Delete Begin ==============");
       logger.log("Checking downloads...");
       Arrays.stream(downloadManager.getDownloads())
           .filter(Download::isComplete)
@@ -68,7 +70,8 @@ public class CategoryAutoDeleter {
               stats.getNumGb(i), stats.getNum(i), i));
         }
       }
-      logger.log("Done!!!");
+      logger.log("============== Category Auto Delete End ==============");
+      logger.log("");
     } catch (Exception e) {
       logger.log(e, "Unexpected error while checking downloads");
     }

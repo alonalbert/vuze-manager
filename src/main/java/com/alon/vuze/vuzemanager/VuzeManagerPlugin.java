@@ -66,9 +66,8 @@ public class VuzeManagerPlugin extends AbstractModule implements Plugin {
     scheduler.scheduleAtFixedRate(() -> {
       categoryAutoDeleter.autoDeleteDownloads();
       plexAutoDeleter.autoDeleteDownloads();
-    }, 0, 1, TimeUnit.DAYS);
+    }, 0, 4, TimeUnit.HOURS);
   }
-
 
   @Override
   protected void configure() {

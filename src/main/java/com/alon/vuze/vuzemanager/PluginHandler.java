@@ -5,6 +5,7 @@ import com.alon.vuze.vuzemanager.logger.Logger;
 import com.alon.vuze.vuzemanager.rules.Rule;
 import com.alon.vuze.vuzemanager.rules.Rules;
 import com.alon.vuze.vuzemanager.ui.ProperSection;
+import com.alon.vuze.vuzemanager.utils.PathUtils;
 import org.gudy.azureus2.plugins.download.Download;
 import org.gudy.azureus2.plugins.download.DownloadCompletionListener;
 import org.gudy.azureus2.plugins.download.DownloadException;
@@ -76,19 +77,27 @@ class PluginHandler implements DownloadCompletionListener, DownloadListener, Dow
   }
 
   private void handleSortTvShows(Download download) {
+    // Don't handle episodes replaced by PROPER
+    final String category = config.get(ProperSection.PROPER_CATEGORY, "");
+    if (!category.isEmpty()) {
+      if (category.equals(download.getAttribute(categoryAttribute))) {
+        return;
+      }
+    }
+
     final TvEpisode episode = TvEpisode.create(download);
     if (episode == null) {
       return;
     }
     final String savePath = download.getSavePath();
-    final String savedPath = new File(savePath).getParent();
+    final String root = PathUtils.getSaveRoot(savePath);
     final String sorted = download.getAttribute(sortedAttribute);
-    if (savedPath.equals(sorted)) {
+    if (root.equals(sorted)) {
       return;
     }
     logger.log("Original save path: %s", savePath);
 
-    final String destination = String.format("%s/%s/S%02d", savedPath, episode.getName(), episode.getSeason());
+    final String destination = String.format("%s/%s/S%02d", root, episode.getName(), episode.getSeason());
     logger.log("Sorting %s into %s", download.getName(), destination);
     final boolean moved = moveDownload(download, destination);
     if (moved) {
