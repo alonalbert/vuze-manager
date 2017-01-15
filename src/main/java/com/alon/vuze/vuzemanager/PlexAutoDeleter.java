@@ -67,7 +67,7 @@ public class PlexAutoDeleter {
     final PlexClient plexClient = plexClientProvider.get();
     try {
       logger.log("");
-      logger.log("\n============== Plex Auto Delete Begin ==============");
+      logger.log("============== Plex Auto Delete Begin ==============");
       logger.log("Fetching show sections from Plex: " + plexClient);
       logger.setStatus("Fetching sections from Plex");
       final Collection<Directory> sections = plexClient.getShowSections();
