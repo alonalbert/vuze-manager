@@ -6,16 +6,16 @@ import java.util.Set;
 
 public class WordUtils {
   private static final Set<String> LOWERCASE_WORDS = ImmutableSet.of(
+      "a",
       "in",
-      "the",
-      "a"
+      "of",
+      "the"
   );
 
   public static String titleCase(String str) {
     if (str == null || str.length() == 0) {
       return str;
     }
-    str = str.toLowerCase();
     int strLen = str.length();
     StringBuilder buffer = new StringBuilder(strLen);
     boolean capitalizeNext = true;

@@ -15,7 +15,7 @@ public class TvEpisode {
   private final boolean proper;
 
   private static final Pattern[] seriesPattern = new Pattern[] {
-      Pattern.compile("^(?<series>.*)\\.s(?<season>\\d+)e(?<episode>\\d+)", Pattern.CASE_INSENSITIVE),
+      Pattern.compile("^(?<series>.*?)(\\.\\d\\d\\d\\d)?\\.s(?<season>\\d+)e(?<episode>\\d+)", Pattern.CASE_INSENSITIVE),
       Pattern.compile("^(?<series>.*)\\.(?<season>\\d\\d\\d\\d)\\.(?<episode>\\d\\d\\.\\d\\d).*HDTV", Pattern.CASE_INSENSITIVE),
   };
   private static final Pattern propperPattern = Pattern.compile("\\bproper\\b", Pattern.CASE_INSENSITIVE);
